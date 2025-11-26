@@ -1,33 +1,74 @@
 'use client';
 
-import React, { useEffect } from 'react';
-import useGameLogic from '@/hooks/useGameLogic';
+import React, { useEffect, useState } from 'react';
+import useGameLogic, { Candidate } from '@/hooks/useGameLogic';
 import GameCard from '@/components/game/GameCard';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
+import { supabase } from '@/lib/supabase/client';
 
-// Mock Data for now
-const MOCK_CANDIDATES = [
-    { id: '1', name: 'Candidate 1', image_url: 'https://placehold.co/600x400/png?text=1' },
-    { id: '2', name: 'Candidate 2', image_url: 'https://placehold.co/600x400/png?text=2' },
-    { id: '3', name: 'Candidate 3', image_url: 'https://placehold.co/600x400/png?text=3' },
-    { id: '4', name: 'Candidate 4', image_url: 'https://placehold.co/600x400/png?text=4' },
-    { id: '5', name: 'Candidate 5', image_url: 'https://placehold.co/600x400/png?text=5' },
-    { id: '6', name: 'Candidate 6', image_url: 'https://placehold.co/600x400/png?text=6' },
-    { id: '7', name: 'Candidate 7', image_url: 'https://placehold.co/600x400/png?text=7' },
-    { id: '8', name: 'Candidate 8', image_url: 'https://placehold.co/600x400/png?text=8' },
-];
-
-export default function GamePlayPage({ params }: { params: { id: string } }) {
-    const { gameState, getCurrentPair, selectWinner } = useGameLogic(MOCK_CANDIDATES);
+export default function GamePlayPage() {
+    const params = useParams();
+    const id = params.id as string;
+    const [candidates, setCandidates] = useState<Candidate[]>([]);
+    const [loading, setLoading] = useState(true);
+    const { gameState, getCurrentPair, selectWinner, sessionStats } = useGameLogic(candidates);
     const router = useRouter();
 
     useEffect(() => {
-        if (gameState.winner) {
-            router.push(`/play/${params.id}/result?winnerId=${gameState.winner.id}`);
-        }
-    }, [gameState.winner, params.id, router]);
+        const fetchCandidates = async () => {
+            if (!id) return;
 
+            const { data, error } = await supabase
+                .from('candidates')
+                .select('id, name, image_url')
+                .eq('worldcup_id', id);
+
+            if (error) {
+                console.error('Error fetching candidates:', error);
+            } else {
+                setCandidates(data || []);
+            }
+            setLoading(false);
+        };
+
+        fetchCandidates();
+    }, [id]);
+
+    useEffect(() => {
+        if (gameState.winner) {
+            // Update stats before redirecting
+            const updateStats = async () => {
+                // Prepare batch updates
+                const updates = Object.entries(sessionStats).map(([candidateId, stats]) => ({
+                    id: candidateId,
+                    match_win_count: stats.match_win,
+                    match_expose_count: stats.match_expose,
+                    win_count: candidateId === gameState.winner!.id ? 1 : 0
+                }));
+
+                console.log('Batch updates payload:', updates);
+
+                // Batch update candidate stats
+                const { error } = await supabase.rpc('batch_update_candidate_stats', { updates });
+
+                if (error) {
+                    console.error('Error updating candidate stats:', error);
+                } else {
+                    console.log('Candidate stats updated successfully');
+                }
+
+                // Increment total_plays for the worldcup
+                await supabase.rpc('increment_worldcup_stats', { worldcup_id: id });
+            };
+
+            updateStats().then(() => {
+                router.push(`/play/${id}/result?winnerId=${gameState.winner!.id}`);
+            });
+        }
+    }, [gameState.winner, id, router, sessionStats]);
+
+    if (loading) return <div className="flex h-screen items-center justify-center">Loading...</div>;
+    if (candidates.length === 0) return <div className="flex h-screen items-center justify-center">No candidates found</div>;
     if (gameState.winner) return null; // Redirecting...
 
     const [left, right] = getCurrentPair();

@@ -42,6 +42,7 @@ export type Database = {
           thumbnail_url: string | null
           is_deleted: boolean
           created_at: string
+          total_plays: number
         }
         Insert: {
           id?: string
@@ -51,6 +52,7 @@ export type Database = {
           thumbnail_url?: string | null
           is_deleted?: boolean
           created_at?: string
+          total_plays?: number
         }
         Update: {
           id?: string
@@ -60,6 +62,7 @@ export type Database = {
           thumbnail_url?: string | null
           is_deleted?: boolean
           created_at?: string
+          total_plays?: number
         }
         Relationships: [
         ]
@@ -127,10 +130,36 @@ export type Database = {
         ]
       }
     }
-    Views: {
-    }
-    Functions: {}
-    Enums: {}
-    CompositeTypes: {}
   }
+  Views: {
+  }
+  Functions: {
+    batch_update_candidate_stats: {
+      Args: {
+        updates: Json
+      }
+      Returns: void
+    }
+    increment_match_stats: {
+      Args: {
+        winner_id: string
+        loser_id: string
+      }
+      Returns: void
+    }
+    increment_win_count: {
+      Args: {
+        candidate_id: string
+      }
+      Returns: void
+    }
+    increment_worldcup_stats: {
+      Args: {
+        worldcup_id: string
+      }
+      Returns: void
+    }
+  }
+  Enums: {}
+  CompositeTypes: {}
 }

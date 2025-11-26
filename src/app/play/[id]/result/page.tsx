@@ -1,55 +1,70 @@
 'use client';
 
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-
-// Mock Data (duplicated from GamePlayPage for now, ideally shared)
-const MOCK_CANDIDATES = [
-    { id: '1', name: 'Candidate 1', image_url: 'https://placehold.co/600x400/png?text=1' },
-    { id: '2', name: 'Candidate 2', image_url: 'https://placehold.co/600x400/png?text=2' },
-    { id: '3', name: 'Candidate 3', image_url: 'https://placehold.co/600x400/png?text=3' },
-    { id: '4', name: 'Candidate 4', image_url: 'https://placehold.co/600x400/png?text=4' },
-    { id: '5', name: 'Candidate 5', image_url: 'https://placehold.co/600x400/png?text=5' },
-    { id: '6', name: 'Candidate 6', image_url: 'https://placehold.co/600x400/png?text=6' },
-    { id: '7', name: 'Candidate 7', image_url: 'https://placehold.co/600x400/png?text=7' },
-    { id: '8', name: 'Candidate 8', image_url: 'https://placehold.co/600x400/png?text=8' },
-];
-
+import { useSearchParams, useRouter, useParams } from 'next/navigation';
+import { supabase } from '@/lib/supabase/client';
 import CommentList from '@/components/comment/CommentList';
+import { Button } from '@/components/ui/button';
 
-// ... (MOCK_CANDIDATES remains the same)
-
-function ResultContent() {
-    const searchParams = useSearchParams();
-    const winnerId = searchParams.get('winnerId');
-    // We need worldcupId, but it's not in searchParams.
-    // It should be passed from the page component which gets it from params.
-    // However, ResultContent is inside ResultPage which gets params.
-    // But ResultContent uses useSearchParams which is client side.
-    // Let's pass params to ResultContent.
-    // Wait, ResultPage is a client component, so it receives params.
-    // But ResultContent is just a helper function.
-    // Let's move ResultContent inside or pass props.
-
-    // Actually, I can get params from the parent component.
-    // But ResultContent is defined outside.
-    // Let's move ResultContent inside or pass props.
-    return null;
+interface Candidate {
+    id: string;
+    name: string;
+    image_url: string;
+    win_count: number;
+    match_win_count: number;
+    match_expose_count: number;
 }
 
-export default function ResultPage({ params }: { params: { id: string } }) {
+export default function ResultPage() {
     return (
-        <Suspense fallback={<div>Loading...</div>}>
-            <ResultContentWrapper params={params} />
+        <Suspense fallback={<div className="flex h-screen items-center justify-center">Loading...</div>}>
+            <ResultContent />
         </Suspense>
     );
 }
 
-function ResultContentWrapper({ params }: { params: { id: string } }) {
+function ResultContent() {
+    const params = useParams();
+    const id = params.id as string;
     const searchParams = useSearchParams();
     const winnerId = searchParams.get('winnerId');
-    const winner = MOCK_CANDIDATES.find((c) => c.id === winnerId);
+    const [winner, setWinner] = useState<Candidate | null>(null);
+    const [loading, setLoading] = useState(true);
+    const router = useRouter();
+
+    useEffect(() => {
+        const fetchWinner = async () => {
+            if (!winnerId) {
+                setLoading(false);
+                return;
+            }
+
+            const { data, error } = await supabase
+                .from('candidates')
+                .select('*')
+                .eq('id', winnerId)
+                .single();
+
+            if (error) {
+                console.error('Error fetching winner:', error);
+            } else {
+                setWinner(data);
+            }
+            setLoading(false);
+        };
+
+        fetchWinner();
+    }, [winnerId]);
+
+    const handleShare = () => {
+        navigator.clipboard.writeText(window.location.href);
+        alert('Link copied to clipboard!');
+    };
+
+    if (loading) {
+        return <div className="flex h-screen items-center justify-center">Loading...</div>;
+    }
 
     if (!winner) {
         return (
@@ -62,30 +77,64 @@ function ResultContentWrapper({ params }: { params: { id: string } }) {
         );
     }
 
+    const winRate = winner.match_expose_count > 0
+        ? ((winner.match_win_count / winner.match_expose_count) * 100).toFixed(1)
+        : '0.0';
+
     return (
         <div className="container mx-auto max-w-4xl py-8 px-4">
             <div className="flex flex-col items-center justify-center mb-12">
-                <h1 className="mb-8 text-4xl font-bold animate-bounce">Winner!</h1>
-                <div className="relative aspect-video w-full max-w-2xl overflow-hidden rounded-xl border shadow-2xl">
+                <h1 className="mb-8 text-4xl font-bold animate-bounce text-primary">Winner!</h1>
+                <div className="relative aspect-video w-full max-w-2xl overflow-hidden rounded-xl border-4 border-primary/20 shadow-2xl mb-6">
                     <img
                         src={winner.image_url}
                         alt={winner.name}
                         className="h-full w-full object-cover"
                     />
                 </div>
-                <h2 className="mt-6 text-3xl font-bold">{winner.name}</h2>
-                <div className="mt-8 flex gap-4">
-                    <Link
-                        href="/"
-                        className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
+                <h2 className="text-3xl font-bold mb-2">{winner.name}</h2>
+
+                <div className="flex gap-8 text-muted-foreground mb-8">
+                    <div className="text-center">
+                        <div className="text-2xl font-bold text-foreground">{winner.win_count}</div>
+                        <div className="text-sm">Final Wins</div>
+                    </div>
+                    <div className="text-center">
+                        <div className="text-2xl font-bold text-foreground">{winRate}%</div>
+                        <div className="text-sm">Win Rate</div>
+                    </div>
+                </div>
+
+                <div className="flex gap-4">
+                    <Button
+                        size="lg"
+                        onClick={() => router.push(`/play/${id}/intro`)}
+                        className="px-8"
                     >
-                        Back to Home
-                    </Link>
+                        Replay
+                    </Button>
+                    <Button
+                        size="lg"
+                        variant="outline"
+                        onClick={handleShare}
+                        className="px-8"
+                    >
+                        Share
+                    </Button>
+                    <Button
+                        size="lg"
+                        variant="secondary"
+                        onClick={() => router.push('/')}
+                        className="px-8"
+                    >
+                        Home
+                    </Button>
                 </div>
             </div>
 
             <div className="border-t pt-8">
-                <CommentList worldcupId={params.id} />
+                <h3 className="text-2xl font-bold mb-6">Comments</h3>
+                <CommentList worldcupId={id} />
             </div>
         </div>
     );

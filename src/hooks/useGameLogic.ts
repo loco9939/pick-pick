@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/lib/supabase/client';
 
 export interface Candidate {
     id: string;
@@ -19,12 +20,20 @@ export default function useGameLogic(initialCandidates: Candidate[]) {
     const [nextRoundCandidates, setNextRoundCandidates] = useState<Candidate[]>([]);
     const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
     const [winner, setWinner] = useState<Candidate | undefined>(undefined);
+    const [sessionStats, setSessionStats] = useState<Record<string, { match_win: number; match_expose: number }>>({});
 
     // Initialize and shuffle
     useEffect(() => {
         if (initialCandidates.length > 0 && candidates.length === 0) {
             const shuffled = [...initialCandidates].sort(() => Math.random() - 0.5);
             setCandidates(shuffled);
+
+            // Initialize session stats
+            const initialStats: Record<string, { match_win: number; match_expose: number }> = {};
+            initialCandidates.forEach(c => {
+                initialStats[c.id] = { match_win: 0, match_expose: 0 };
+            });
+            setSessionStats(initialStats);
         }
     }, [initialCandidates]);
 
@@ -32,11 +41,25 @@ export default function useGameLogic(initialCandidates: Candidate[]) {
         return [candidates[currentMatchIndex * 2], candidates[currentMatchIndex * 2 + 1]];
     }, [candidates, currentMatchIndex]);
 
-    const selectWinner = useCallback((winnerId: string) => {
+    const selectWinner = useCallback(async (winnerId: string) => {
         const currentPair = getCurrentPair();
         const winner = currentPair.find((c) => c.id === winnerId);
+        const loser = currentPair.find((c) => c.id !== winnerId);
 
-        if (winner) {
+        if (winner && loser) {
+            // Update local stats
+            setSessionStats(prev => ({
+                ...prev,
+                [winner.id]: {
+                    match_win: (prev[winner.id]?.match_win || 0) + 1,
+                    match_expose: (prev[winner.id]?.match_expose || 0) + 1
+                },
+                [loser.id]: {
+                    ...prev[loser.id],
+                    match_expose: (prev[loser.id]?.match_expose || 0) + 1
+                }
+            }));
+
             setNextRoundCandidates((prev) => [...prev, winner]);
         }
 
@@ -75,5 +98,6 @@ export default function useGameLogic(initialCandidates: Candidate[]) {
         gameState,
         getCurrentPair,
         selectWinner,
+        sessionStats
     };
 }
