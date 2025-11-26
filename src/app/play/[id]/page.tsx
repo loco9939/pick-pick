@@ -1,9 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import useGameLogic from '@/hooks/useGameLogic';
 import GameCard from '@/components/game/GameCard';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 // Mock Data for now
 const MOCK_CANDIDATES = [
@@ -19,30 +20,15 @@ const MOCK_CANDIDATES = [
 
 export default function GamePlayPage({ params }: { params: { id: string } }) {
     const { gameState, getCurrentPair, selectWinner } = useGameLogic(MOCK_CANDIDATES);
+    const router = useRouter();
 
-    if (gameState.winner) {
-        return (
-            <div className="container flex h-[calc(100vh-4rem)] flex-col items-center justify-center">
-                <h1 className="mb-8 text-4xl font-bold">Winner!</h1>
-                <div className="relative aspect-video w-full max-w-2xl overflow-hidden rounded-xl border shadow-lg">
-                    <img
-                        src={gameState.winner.image_url}
-                        alt={gameState.winner.name}
-                        className="h-full w-full object-cover"
-                    />
-                </div>
-                <h2 className="mt-6 text-3xl font-bold">{gameState.winner.name}</h2>
-                <div className="mt-8 flex gap-4">
-                    <Link
-                        href="/"
-                        className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
-                    >
-                        Back to Home
-                    </Link>
-                </div>
-            </div>
-        );
-    }
+    useEffect(() => {
+        if (gameState.winner) {
+            router.push(`/play/${params.id}/result?winnerId=${gameState.winner.id}`);
+        }
+    }, [gameState.winner, params.id, router]);
+
+    if (gameState.winner) return null; // Redirecting...
 
     const [left, right] = getCurrentPair();
 

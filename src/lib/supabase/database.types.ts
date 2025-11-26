@@ -90,6 +90,35 @@ export interface Database {
           match_expose_count?: number
         }
       }
+      comments: {
+        Row: {
+          id: string
+          worldcup_id: string
+          user_id: string | null
+          nickname: string
+          content: string
+          parent_id: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          worldcup_id: string
+          user_id?: string | null
+          nickname: string
+          content: string
+          parent_id?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          worldcup_id?: string
+          user_id?: string | null
+          nickname?: string
+          content?: string
+          parent_id?: string | null
+          created_at?: string
+        }
+      }
     }
     Views: {
       worldcup_stats: {

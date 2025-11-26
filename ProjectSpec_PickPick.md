@@ -43,6 +43,17 @@ create table public.candidates (
   match_expose_count int default 0 -- 1:1 대결 노출 횟수
 );
 
+-- [Table: comments] 월드컵 댓글 (계층형 구조)
+create table public.comments (
+  id uuid default gen_random_uuid() primary key,
+  worldcup_id uuid references public.worldcups(id) on delete cascade not null,
+  user_id uuid references public.profiles(id), -- Nullable: 비로그인 유저 허용
+  nickname text not null, -- 작성자 닉네임 (로그인 유저도 입력 가능 or 자동 채움)
+  content text not null,
+  parent_id uuid references public.comments(id), -- 대댓글을 위한 자기 참조
+  created_at timestamptz default now()
+);
+
 -- [View: worldcup_stats] 통계 최적화를 위한 가상 테이블
 create view public.worldcup_stats as
 select 
@@ -70,6 +81,14 @@ group by w.id, w.title;
     
     - `Update (Stats)`: `true` (게임 결과 반영을 위해 누구나 카운트 증가 허용 - _보안 강화 필요 시 Edge Function 권장_)
         
+- **Comments Table:**
+    
+    - `Select`: `true` (누구나 조회 가능)
+        
+    - `Insert`: `true` (비로그인 유저도 작성 가능)
+        
+    - `Update/Delete`: `auth.uid() == user_id` (로그인 유저 본인만) OR `session_id` check (비로그인 - 추후 고려)
+        
 
 ---
 
@@ -86,7 +105,7 @@ _원칙 1(통합): 화면 ID와 URL, 컴포넌트가 1:1로 매핑됩니다._
 |**SCR-EDIT**|`/edit/[id]`|월드컵 수정|• **[P-OWNER]** `owner_id` 불일치 시 403 에러<br><br>  <br><br>• 기존 후보 데이터 로드 및 수정|
 |**SCR-PRE**|`/play/[id]/intro`|게임 시작 전|• 라운드 선택 (32강/16강...)<br><br>  <br><br>• 현재 1위 후보 미리보기|
 |**SCR-PLAY**|`/play/[id]`|게임 진행|• **[UI-THUMB]** 반반(Half-Half) 카드 UI<br><br>  <br><br>• 이상형 선택 시 다음 라운드 큐(Queue)로 이동|
-|**SCR-RESULT**|`/play/[id]/result`|결과/통계|• **[F-STAT]** 우승자 화려한 연출 + 랭킹 그래프<br><br>  <br><br>• **[F-ADS]** 하단 배너 광고|
+|**SCR-RESULT**|`/play/[id]/result`|결과/통계|• **[F-STAT]** 우승자 화려한 연출 + 랭킹 그래프<br><br>  <br><br>• **[F-ADS]** 하단 배너 광고<br><br>  <br><br>• **[F-COMM]** 댓글 및 대댓글 작성/조회|
 
 ---
 
