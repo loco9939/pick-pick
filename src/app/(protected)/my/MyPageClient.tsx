@@ -47,13 +47,14 @@ export default function MyPageClient() {
     const handleDelete = async (id: string) => {
         if (!confirm('Are you sure you want to delete this WorldCup?')) return;
 
-        const { error } = await (supabase
-            .from('worldcups') as any)
+        // 1. Soft delete WorldCup
+        const { error: wcError } = await supabase
+            .from('worldcups')
             .update({ is_deleted: true })
             .eq('id', id);
 
-        if (error) {
-            console.error('Error deleting worldcup:', error);
+        if (wcError) {
+            console.error('Error deleting worldcup:', wcError);
             alert('Failed to delete WorldCup');
         } else {
             setWorldcups((prev) => prev.filter((wc) => wc.id !== id));

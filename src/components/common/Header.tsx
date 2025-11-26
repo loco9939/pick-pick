@@ -30,6 +30,12 @@ const Header: React.FC = () => {
                         ) : user ? (
                             <>
                                 <Link
+                                    href="/create"
+                                    className="text-sm font-medium transition-colors hover:text-primary"
+                                >
+                                    Create
+                                </Link>
+                                <Link
                                     href="/my"
                                     className="text-sm font-medium transition-colors hover:text-primary"
                                 >
