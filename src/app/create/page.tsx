@@ -1,6 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase/client';
+import { useUser } from '@/context/UserContext';
+import { Database } from '@/lib/supabase/database.types';
 
 interface Candidate {
     name: string;
@@ -8,6 +12,8 @@ interface Candidate {
 }
 
 export default function CreatePage() {
+    const router = useRouter();
+    const { user } = useUser();
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [candidates, setCandidates] = useState<Candidate[]>([
@@ -15,6 +21,7 @@ export default function CreatePage() {
         { name: '', url: '' },
     ]);
     const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleCandidateChange = (index: number, field: keyof Candidate, value: string) => {
         const newCandidates = [...candidates];
@@ -35,7 +42,7 @@ export default function CreatePage() {
         setCandidates(newCandidates);
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
 
@@ -55,8 +62,45 @@ export default function CreatePage() {
             return;
         }
 
-        // TODO: Submit to Supabase
-        console.log({ title, description, candidates: validCandidates });
+        try {
+            setIsLoading(true);
+
+            // 1. Insert WorldCup
+            const { data: worldcup, error: worldcupError } = await supabase
+                .from('worldcups')
+                .insert({
+                    title,
+                    description,
+                    owner_id: user?.id || null,
+                    thumbnail_url: validCandidates[0].url, // Use first candidate as thumbnail
+                })
+                .select()
+                .single();
+
+            if (worldcupError) throw worldcupError;
+
+            // 2. Insert Candidates
+            const candidatesToInsert = validCandidates.map(c => ({
+                worldcup_id: worldcup.id,
+                name: c.name,
+                image_url: c.url,
+            }));
+
+            const { error: candidatesError } = await supabase
+                .from('candidates')
+                .insert(candidatesToInsert);
+
+            if (candidatesError) throw candidatesError;
+
+            // 3. Redirect
+            router.push(`/play/${worldcup.id}`);
+            router.refresh();
+        } catch (error: any) {
+            console.error('Error creating WorldCup:', error);
+            setError(error.message || 'Failed to create WorldCup');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -158,9 +202,10 @@ export default function CreatePage() {
 
                 <button
                     type="submit"
+                    disabled={isLoading}
                     className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 w-full"
                 >
-                    Create WorldCup
+                    {isLoading ? 'Creating...' : 'Create WorldCup'}
                 </button>
             </form>
         </div>

@@ -6,7 +6,7 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export interface Database {
+export type Database = {
   public: {
     Tables: {
       profiles: {
@@ -31,6 +31,7 @@ export interface Database {
           role?: string
           created_at?: string
         }
+        Relationships: []
       }
       worldcups: {
         Row: {
@@ -60,6 +61,8 @@ export interface Database {
           is_deleted?: boolean
           created_at?: string
         }
+        Relationships: [
+        ]
       }
       candidates: {
         Row: {
@@ -89,6 +92,8 @@ export interface Database {
           match_win_count?: number
           match_expose_count?: number
         }
+        Relationships: [
+        ]
       }
       comments: {
         Row: {
@@ -118,17 +123,14 @@ export interface Database {
           parent_id?: string | null
           created_at?: string
         }
+        Relationships: [
+        ]
       }
     }
     Views: {
-      worldcup_stats: {
-        Row: {
-          worldcup_id: string
-          title: string
-          candidate_count: number
-          total_plays: number
-        }
-      }
     }
+    Functions: {}
+    Enums: {}
+    CompositeTypes: {}
   }
 }
