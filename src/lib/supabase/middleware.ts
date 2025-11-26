@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { Database } from './database.types';
+import { PROTECTED_ROUTES, AUTH_ROUTES, PUBLIC_ROUTES } from '@/constants/routes';
 
 export async function updateSession(request: NextRequest) {
     let supabaseResponse = NextResponse.next({
@@ -38,14 +39,38 @@ export async function updateSession(request: NextRequest) {
         data: { user },
     } = await supabase.auth.getUser();
 
-    if (
-        !user &&
-        (request.nextUrl.pathname.startsWith('/create') ||
-            request.nextUrl.pathname.startsWith('/my'))
-    ) {
-        // no user, potentially respond by redirecting the user to the login page
+    const path = request.nextUrl.pathname;
+
+    const isProtectedRoute = PROTECTED_ROUTES.some((route) =>
+        path.startsWith(route)
+    );
+    const isAuthRoute = AUTH_ROUTES.some((route) =>
+        path.startsWith(route)
+    );
+    const isPublicRoute = PUBLIC_ROUTES.some((route) =>
+        path.startsWith(route)
+    );
+    const isRootPage = path === '/';
+
+    // 1. Redirect unauthenticated users trying to access protected routes
+    if (!user && isProtectedRoute) {
         const url = request.nextUrl.clone();
         url.pathname = '/auth/login';
+        return NextResponse.redirect(url);
+    }
+
+    // 2. Redirect authenticated users trying to access auth routes
+    if (user && isAuthRoute) {
+        const url = request.nextUrl.clone();
+        url.pathname = '/';
+        return NextResponse.redirect(url);
+    }
+
+    // 3. Redirect access to unspecified routes to home
+    // If it's not protected, not auth, not public, and not root -> Redirect to /
+    if (!isProtectedRoute && !isAuthRoute && !isPublicRoute && !isRootPage) {
+        const url = request.nextUrl.clone();
+        url.pathname = '/';
         return NextResponse.redirect(url);
     }
 
