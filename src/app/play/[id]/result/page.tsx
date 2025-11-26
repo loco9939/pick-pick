@@ -2,6 +2,7 @@
 
 import React, { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useSearchParams, useRouter, useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import CommentList from '@/components/comment/CommentList';
@@ -57,6 +58,18 @@ function ResultContent() {
         fetchWinner();
     }, [winnerId]);
 
+    const [imageError, setImageError] = useState(false);
+
+    const isValidUrl = React.useMemo(() => {
+        if (!winner?.image_url) return false;
+        try {
+            new URL(winner.image_url);
+            return true;
+        } catch {
+            return winner.image_url.startsWith('/');
+        }
+    }, [winner?.image_url]);
+
     const handleShare = () => {
         navigator.clipboard.writeText(window.location.href);
         alert('Link copied to clipboard!');
@@ -85,12 +98,20 @@ function ResultContent() {
         <div className="container mx-auto max-w-4xl py-8 px-4">
             <div className="flex flex-col items-center justify-center mb-12">
                 <h1 className="mb-8 text-4xl font-bold animate-bounce text-primary">Winner!</h1>
-                <div className="relative aspect-video w-full max-w-2xl overflow-hidden rounded-xl border-4 border-primary/20 shadow-2xl mb-6">
-                    <img
-                        src={winner.image_url}
-                        alt={winner.name}
-                        className="h-full w-full object-cover"
-                    />
+                <div className="relative aspect-video w-full max-w-2xl overflow-hidden rounded-xl border-4 border-primary/20 shadow-2xl mb-6 flex items-center justify-center bg-muted">
+                    {!imageError && isValidUrl ? (
+                        <Image
+                            src={winner.image_url}
+                            alt={winner.name}
+                            fill
+                            className="object-cover"
+                            onError={() => setImageError(true)}
+                        />
+                    ) : (
+                        <div className="flex flex-col items-center justify-center p-4 text-center">
+                            <span className="text-4xl font-bold text-muted-foreground">{winner.name}</span>
+                        </div>
+                    )}
                 </div>
                 <h2 className="text-3xl font-bold mb-2">{winner.name}</h2>
 

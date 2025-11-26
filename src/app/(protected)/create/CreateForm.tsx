@@ -15,10 +15,8 @@ export default function CreateForm() {
     const { user, isLoading: isUserLoading } = useUser();
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
-    const [candidates, setCandidates] = useState<Candidate[]>([
-        { name: '', url: '' },
-        { name: '', url: '' },
-    ]);
+    const [selectedRound, setSelectedRound] = useState<number>(4);
+    const [candidates, setCandidates] = useState<Candidate[]>([]);
     const [error, setError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -27,6 +25,21 @@ export default function CreateForm() {
             router.push('/auth/login');
         }
     }, [user, isUserLoading, router]);
+
+    // Initialize candidates based on selected round
+    useEffect(() => {
+        setCandidates(prev => {
+            const currentCount = prev.length;
+            if (currentCount === selectedRound) return prev;
+
+            if (currentCount < selectedRound) {
+                const toAdd = selectedRound - currentCount;
+                return [...prev, ...Array.from({ length: toAdd }, () => ({ name: '', url: '' }))];
+            } else {
+                return prev.slice(0, selectedRound);
+            }
+        });
+    }, [selectedRound]);
 
     if (isUserLoading) {
         return <div className="flex h-screen items-center justify-center">Loading...</div>;
@@ -42,19 +55,6 @@ export default function CreateForm() {
         setCandidates(newCandidates);
     };
 
-    const addCandidate = () => {
-        setCandidates([...candidates, { name: '', url: '' }]);
-    };
-
-    const removeCandidate = (index: number) => {
-        if (candidates.length <= 2) {
-            setError('At least 2 candidates are required');
-            return;
-        }
-        const newCandidates = candidates.filter((_, i) => i !== index);
-        setCandidates(newCandidates);
-    };
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
@@ -65,13 +65,8 @@ export default function CreateForm() {
         }
 
         const validCandidates = candidates.filter(c => c.name.trim() && c.url.trim());
-        if (validCandidates.length < candidates.length) {
-            setError('All candidates must have a name and image URL');
-            return;
-        }
-
-        if (validCandidates.length < 2) {
-            setError('At least 2 candidates are required');
+        if (validCandidates.length !== selectedRound) {
+            setError(`Please fill in all ${selectedRound} candidates.`);
             return;
         }
 
@@ -155,32 +150,43 @@ export default function CreateForm() {
                     />
                 </div>
 
+                <div className="space-y-2">
+                    <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                        Tournament Size
+                    </label>
+                    <select
+                        value={selectedRound}
+                        onChange={(e) => setSelectedRound(Number(e.target.value))}
+                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        {[4, 8, 16, 32, 64].map(size => (
+                            <option key={size} value={size}>{size}강 (Requires {size} candidates)</option>
+                        ))}
+                    </select>
+                </div>
+
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">
                         <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                            Candidates
+                            Candidates ({candidates.filter(c => c.name && c.url).length} / {selectedRound})
                         </label>
-                        <button
-                            type="button"
-                            onClick={addCandidate}
-                            className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-8 px-3"
-                        >
-                            Add Candidate
-                        </button>
                     </div>
 
                     <div className="rounded-md border">
                         <table className="w-full caption-bottom text-sm">
                             <thead className="[&_tr]:border-b">
                                 <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[50px]">#</th>
                                     <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[200px]">Candidate Name</th>
                                     <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Image URL</th>
-                                    <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground w-[100px]">Action</th>
                                 </tr>
                             </thead>
                             <tbody className="[&_tr:last-child]:border-0">
                                 {candidates.map((candidate, index) => (
                                     <tr key={index} className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                                        <td className="p-4 align-middle text-muted-foreground">
+                                            {index + 1}
+                                        </td>
                                         <td className="p-4 align-middle">
                                             <input
                                                 value={candidate.name}
@@ -196,15 +202,6 @@ export default function CreateForm() {
                                                 className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                                                 placeholder="https://example.com/image.jpg"
                                             />
-                                        </td>
-                                        <td className="p-4 align-middle text-right">
-                                            <button
-                                                type="button"
-                                                onClick={() => removeCandidate(index)}
-                                                className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:bg-destructive/90 hover:text-destructive-foreground h-8 w-8 text-destructive"
-                                            >
-                                                Delete
-                                            </button>
                                         </td>
                                     </tr>
                                 ))}

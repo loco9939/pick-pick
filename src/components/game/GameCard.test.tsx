@@ -26,4 +26,31 @@ describe('GameCard', () => {
         fireEvent.click(screen.getByRole('button'));
         expect(handleClick).toHaveBeenCalledTimes(1);
     });
+
+    it('renders fallback name when image fails to load', () => {
+        render(<GameCard candidate={mockCandidate} onClick={() => { }} />);
+
+        const img = screen.getByAltText('Candidate 1');
+        fireEvent.error(img);
+
+        // The image should be removed from the document (or replaced)
+        expect(screen.queryByAltText('Candidate 1')).not.toBeInTheDocument();
+
+        // We expect the name to be present twice now (once in the fallback area, once in the footer)
+        // Or we can check for the specific fallback element class
+        const names = screen.getAllByText('Candidate 1');
+        expect(names).toHaveLength(2);
+    });
+
+    it('renders fallback name immediately for invalid URL', () => {
+        const invalidCandidate = { ...mockCandidate, image_url: 'invalid-url' };
+        render(<GameCard candidate={invalidCandidate} onClick={() => { }} />);
+
+        // Image should not be rendered
+        expect(screen.queryByAltText('Candidate 1')).not.toBeInTheDocument();
+
+        // Fallback name should be present
+        const names = screen.getAllByText('Candidate 1');
+        expect(names).toHaveLength(2);
+    });
 });

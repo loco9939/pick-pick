@@ -23,29 +23,34 @@ export default function EditForm({ worldcup, candidates: initialCandidates }: Ed
     const router = useRouter();
     const [title, setTitle] = useState(worldcup.title);
     const [description, setDescription] = useState(worldcup.description || '');
+    // Determine initial round size based on existing candidates (round up to nearest power of 2)
+    const initialRound = [4, 8, 16, 32, 64].find(r => r >= initialCandidates.length) || 64;
+    const [selectedRound, setSelectedRound] = useState<number>(initialRound);
     const [candidates, setCandidates] = useState<FormCandidate[]>(
         initialCandidates.map(c => ({ id: c.id, name: c.name, url: c.image_url }))
     );
     const [error, setError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // Initialize candidates based on selected round
+    React.useEffect(() => {
+        setCandidates(prev => {
+            const currentCount = prev.length;
+            if (currentCount === selectedRound) return prev;
+
+            if (currentCount < selectedRound) {
+                const toAdd = selectedRound - currentCount;
+                return [...prev, ...Array.from({ length: toAdd }, () => ({ name: '', url: '' }))];
+            } else {
+                return prev.slice(0, selectedRound);
+            }
+        });
+    }, [selectedRound]);
+
     const handleCandidateChange = (index: number, field: keyof FormCandidate, value: string) => {
         const newCandidates = [...candidates];
         // @ts-ignore
         newCandidates[index][field] = value;
-        setCandidates(newCandidates);
-    };
-
-    const addCandidate = () => {
-        setCandidates([...candidates, { name: '', url: '' }]);
-    };
-
-    const removeCandidate = (index: number) => {
-        if (candidates.length <= 2) {
-            setError('At least 2 candidates are required');
-            return;
-        }
-        const newCandidates = candidates.filter((_, i) => i !== index);
         setCandidates(newCandidates);
     };
 
@@ -59,13 +64,8 @@ export default function EditForm({ worldcup, candidates: initialCandidates }: Ed
         }
 
         const validCandidates = candidates.filter(c => c.name.trim() && c.url.trim());
-        if (validCandidates.length < candidates.length) {
-            setError('All candidates must have a name and image URL');
-            return;
-        }
-
-        if (validCandidates.length < 2) {
-            setError('At least 2 candidates are required');
+        if (validCandidates.length !== selectedRound) {
+            setError(`Please fill in all ${selectedRound} candidates.`);
             return;
         }
 
@@ -176,32 +176,43 @@ export default function EditForm({ worldcup, candidates: initialCandidates }: Ed
                     />
                 </div>
 
+                <div className="space-y-2">
+                    <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                        Tournament Size
+                    </label>
+                    <select
+                        value={selectedRound}
+                        onChange={(e) => setSelectedRound(Number(e.target.value))}
+                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        {[4, 8, 16, 32, 64].map(size => (
+                            <option key={size} value={size}>{size}강 (Requires {size} candidates)</option>
+                        ))}
+                    </select>
+                </div>
+
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">
                         <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                            Candidates
+                            Candidates ({candidates.filter(c => c.name && c.url).length} / {selectedRound})
                         </label>
-                        <button
-                            type="button"
-                            onClick={addCandidate}
-                            className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-8 px-3"
-                        >
-                            Add Candidate
-                        </button>
                     </div>
 
                     <div className="rounded-md border">
                         <table className="w-full caption-bottom text-sm">
                             <thead className="[&_tr]:border-b">
                                 <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[50px]">#</th>
                                     <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[200px]">Candidate Name</th>
                                     <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Image URL</th>
-                                    <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground w-[100px]">Action</th>
                                 </tr>
                             </thead>
                             <tbody className="[&_tr:last-child]:border-0">
                                 {candidates.map((candidate, index) => (
                                     <tr key={index} className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                                        <td className="p-4 align-middle text-muted-foreground">
+                                            {index + 1}
+                                        </td>
                                         <td className="p-4 align-middle">
                                             <input
                                                 value={candidate.name}
@@ -217,15 +228,6 @@ export default function EditForm({ worldcup, candidates: initialCandidates }: Ed
                                                 className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                                                 placeholder="https://example.com/image.jpg"
                                             />
-                                        </td>
-                                        <td className="p-4 align-middle text-right">
-                                            <button
-                                                type="button"
-                                                onClick={() => removeCandidate(index)}
-                                                className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:bg-destructive/90 hover:text-destructive-foreground h-8 w-8 text-destructive"
-                                            >
-                                                Delete
-                                            </button>
                                         </td>
                                     </tr>
                                 ))}
