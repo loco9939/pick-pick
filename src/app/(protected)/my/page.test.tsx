@@ -1,7 +1,5 @@
-import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import MyPage from './page';
-import { useRouter } from 'next/navigation';
 
 // Mock useRouter
 const mockPush = jest.fn();

@@ -1,19 +1,18 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import { useUser } from '@/context/UserContext';
-import { Database } from '@/lib/supabase/database.types';
 
 interface Candidate {
     name: string;
     url: string;
 }
 
-export default function CreatePage() {
+export default function CreateForm() {
     const router = useRouter();
-    const { user } = useUser();
+    const { user, isLoading: isUserLoading } = useUser();
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [candidates, setCandidates] = useState<Candidate[]>([
@@ -21,7 +20,21 @@ export default function CreatePage() {
         { name: '', url: '' },
     ]);
     const [error, setError] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    useEffect(() => {
+        if (!isUserLoading && !user) {
+            router.push('/auth/login');
+        }
+    }, [user, isUserLoading, router]);
+
+    if (isUserLoading) {
+        return <div className="flex h-screen items-center justify-center">Loading...</div>;
+    }
+
+    if (!user) {
+        return null; // Don't render anything while redirecting
+    }
 
     const handleCandidateChange = (index: number, field: keyof Candidate, value: string) => {
         const newCandidates = [...candidates];
@@ -63,7 +76,7 @@ export default function CreatePage() {
         }
 
         try {
-            setIsLoading(true);
+            setIsSubmitting(true);
 
             // 1. Insert WorldCup
             const { data: worldcup, error: worldcupError } = await supabase
@@ -71,7 +84,7 @@ export default function CreatePage() {
                 .insert({
                     title,
                     description,
-                    owner_id: user?.id || null,
+                    owner_id: user.id,
                     thumbnail_url: validCandidates[0].url, // Use first candidate as thumbnail
                 })
                 .select()
@@ -99,7 +112,7 @@ export default function CreatePage() {
             console.error('Error creating WorldCup:', error);
             setError(error.message || 'Failed to create WorldCup');
         } finally {
-            setIsLoading(false);
+            setIsSubmitting(false);
         }
     };
 
@@ -202,10 +215,10 @@ export default function CreatePage() {
 
                 <button
                     type="submit"
-                    disabled={isLoading}
+                    disabled={isSubmitting}
                     className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 w-full"
                 >
-                    {isLoading ? 'Creating...' : 'Create WorldCup'}
+                    {isSubmitting ? 'Creating...' : 'Create WorldCup'}
                 </button>
             </form>
         </div>

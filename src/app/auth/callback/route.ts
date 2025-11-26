@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
 import { Database } from '@/lib/supabase/database.types';
@@ -9,16 +9,36 @@ export async function GET(request: NextRequest) {
     const next = searchParams.get('next') ?? '/';
 
     if (code) {
-        const supabase = createClient<Database>(
+        const cookieStore = request.cookies;
+        const supabase = createServerClient<Database>(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+            {
+                cookies: {
+                    getAll() {
+                        return cookieStore.getAll();
+                    },
+                    setAll(cookiesToSet) {
+                        cookiesToSet.forEach(({ name, value, options }) =>
+                            cookieStore.set(name, value)
+                        );
+                    },
+                },
+            }
         );
 
         // Exchange the code for a session
         const { error } = await supabase.auth.exchangeCodeForSession(code);
 
         if (!error) {
-            return NextResponse.redirect(`${origin}${next}`);
+            const response = NextResponse.redirect(`${origin}${next}`);
+            // Important: Copy the cookies from the request to the response
+            // This ensures the new session cookie is actually set on the client
+            const cookiesToSet = cookieStore.getAll();
+            cookiesToSet.forEach((cookie) => {
+                response.cookies.set(cookie.name, cookie.value);
+            });
+            return response;
         }
     }
 

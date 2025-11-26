@@ -5,22 +5,24 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import WorldCupCard from '@/components/worldcup/WorldCupCard';
 import { Database } from '@/lib/supabase/database.types';
+import { useUser } from '@/context/UserContext';
 
 type WorldCup = Database['public']['Tables']['worldcups']['Row'];
 
-export default function MyPage() {
+export default function MyPageClient() {
     const router = useRouter();
+    const { user, isLoading: isUserLoading } = useUser();
     const [worldcups, setWorldcups] = useState<WorldCup[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isDataLoading, setIsDataLoading] = useState(true);
 
     useEffect(() => {
-        const checkAuthAndFetchData = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
+        if (!isUserLoading && !user) {
+            router.push('/auth/login');
+            return;
+        }
 
-            if (!user) {
-                router.push('/auth/login');
-                return;
-            }
+        const fetchWorldCups = async () => {
+            if (!user) return;
 
             const { data, error } = await supabase
                 .from('worldcups')
@@ -34,11 +36,13 @@ export default function MyPage() {
             } else {
                 setWorldcups(data || []);
             }
-            setIsLoading(false);
+            setIsDataLoading(false);
         };
 
-        checkAuthAndFetchData();
-    }, [router]);
+        if (!isUserLoading && user) {
+            fetchWorldCups();
+        }
+    }, [user, isUserLoading, router]);
 
     const handleDelete = async (id: string) => {
         if (!confirm('Are you sure you want to delete this WorldCup?')) return;
@@ -56,7 +60,7 @@ export default function MyPage() {
         }
     };
 
-    if (isLoading) {
+    if (isUserLoading || isDataLoading) {
         return <div className="container py-8 text-center">Loading...</div>;
     }
 
