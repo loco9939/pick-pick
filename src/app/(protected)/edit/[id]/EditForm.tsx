@@ -63,7 +63,7 @@ export default function EditForm({ worldcup, candidates: initialCandidates }: Ed
             return;
         }
 
-        const validCandidates = candidates.filter(c => c.name.trim() && c.url.trim());
+        const validCandidates = candidates.filter(c => c.name.trim());
         if (validCandidates.length !== selectedRound) {
             setError(`Please fill in all ${selectedRound} candidates.`);
             return;
@@ -78,7 +78,7 @@ export default function EditForm({ worldcup, candidates: initialCandidates }: Ed
                 .update({
                     title,
                     description,
-                    thumbnail_url: validCandidates[0].url, // Update thumbnail to first candidate
+                    thumbnail_url: validCandidates[0]?.url || '', // Update thumbnail to first candidate, or empty string
                     candidate_count: selectedRound,
                 })
                 .eq('id', worldcup.id);

@@ -120,7 +120,7 @@ function ResultContent() {
                             sizes="(max-width: 768px) 100vw, 50vw" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60" />
                         <div className="absolute bottom-0 left-0 right-0 p-6 text-center">
-                            <h2 className="text-4xl font-bold text-white mb-2 drop-shadow-lg">{winner.name}</h2>
+                            <h2 className="text-2xl font-bold text-white mb-2 drop-shadow-lg">{winner.name}</h2>
                         </div>
                     </div>
 

@@ -26,7 +26,7 @@ export default function CandidateThumbnail({ imageUrl, name, className = "object
 
     if (error) {
         return (
-            <div className="flex h-full w-full items-center justify-center bg-muted text-xs font-bold text-muted-foreground p-2 text-center">
+            <div className="flex h-full w-full items-center justify-center bg-muted text-lg font-bold text-muted-foreground p-2 text-center">
                 {name}
             </div>
         );
@@ -34,7 +34,7 @@ export default function CandidateThumbnail({ imageUrl, name, className = "object
 
     if (!isValidUrl) {
         return (
-            <div className="flex h-full w-full items-center justify-center bg-muted text-xs font-bold text-muted-foreground p-2 text-center">
+            <div className="flex h-full w-full items-center justify-center bg-muted text-lg font-bold text-muted-foreground p-2 text-center">
                 {name}
             </div>
         );

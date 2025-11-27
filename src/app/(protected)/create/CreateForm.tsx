@@ -64,7 +64,7 @@ export default function CreateForm() {
             return;
         }
 
-        const validCandidates = candidates.filter(c => c.name.trim() && c.url.trim());
+        const validCandidates = candidates.filter(c => c.name.trim());
         if (validCandidates.length !== selectedRound) {
             setError(`Please fill in all ${selectedRound} candidates.`);
             return;
@@ -80,7 +80,7 @@ export default function CreateForm() {
                     title,
                     description,
                     owner_id: user.id,
-                    thumbnail_url: validCandidates[0].url, // Use first candidate as thumbnail
+                    thumbnail_url: validCandidates[0]?.url || '', // Use first candidate as thumbnail, or empty string
                     candidate_count: selectedRound,
                 })
                 .select()
