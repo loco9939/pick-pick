@@ -1,4 +1,5 @@
 
+import Link from 'next/link';
 import WorldCupCard from '@/components/worldcup/WorldCupCard';
 import { createClient } from '@/lib/supabase/server';
 import StaggeredGrid, { StaggeredItem } from '@/components/ui/StaggeredGrid';
@@ -28,6 +29,13 @@ export default async function Home() {
               title={worldcup.title}
               description={worldcup.description || ''}
               thumbnailUrl={worldcup.thumbnail_url || 'https://placehold.co/600x400/png?text=No+Image'}
+              actions={
+                <div className="flex justify-end">
+                  <Link href={`/play/${worldcup.id}/result`} className="text-sm font-medium text-primary hover:underline">
+                    View Stats
+                  </Link>
+                </div>
+              }
             />
           </StaggeredItem>
         ))}
