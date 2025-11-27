@@ -131,7 +131,7 @@ export default function GamePlayPage() {
             </div>
 
             {/* Round Indicator */}
-            <div className="absolute top-4 left-1/2 z-[60] -translate-x-1/2 flex flex-col items-center justify-center rounded-lg bg-slate-900/80 px-3 py-1.5 md:top-6 md:px-4 md:py-2 backdrop-blur-md border border-slate-700 shadow-lg text-center">
+            <div className="absolute top-4 right-4 z-[60] flex flex-col items-center justify-center rounded-lg bg-slate-900/80 px-3 py-1.5 md:top-6 md:px-4 md:py-2 backdrop-blur-md border border-slate-700 shadow-lg text-center">
                 <p className="text-lg font-bold text-white tracking-wider md:text-xl">{gameState.round}</p>
                 <p className="text-[10px] font-medium text-slate-400 md:text-xs">Match {gameState.currentMatch} / {gameState.totalMatches}</p>
             </div>
