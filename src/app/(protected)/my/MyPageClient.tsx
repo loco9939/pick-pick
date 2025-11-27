@@ -175,7 +175,7 @@ export default function MyPageClient() {
                             id={wc.id}
                             title={wc.title}
                             description={wc.description || ''}
-                            thumbnailUrl={wc.thumbnail_url || 'https://placehold.co/600x400/png?text=No+Image'}
+                            thumbnailUrl={wc.thumbnail_url || ''}
                             totalPlays={wc.total_plays}
                             candidateCount={wc.candidate_count || 0}
                             actions={

@@ -26,8 +26,8 @@ const WorldCupThumbnail: React.FC<WorldCupThumbnailProps> = ({ title, thumbnailU
     const renderContent = () => {
         if (error || !isValidUrl) {
             return (
-                <div className="flex flex-col items-center justify-center p-4 text-center h-full w-full">
-                    <span className="text-xl font-bold text-muted-foreground line-clamp-2">{title}</span>
+                <div className="flex h-full w-full items-center justify-center bg-muted text-lg font-bold text-muted-foreground p-4 text-center">
+                    <span className="line-clamp-2">{title}</span>
                 </div>
             );
         }

@@ -232,11 +232,17 @@ export default function EditForm({ worldcup, candidates: initialCandidates }: Ed
                                             />
                                         </td>
                                         <td className="p-4 align-middle text-center">
-                                            <img
-                                                src={candidate.url}
-                                                alt={candidate.name}
-                                                className="w-16 h-16 object-cover rounded mx-auto"
-                                            />
+                                            {candidate.url ? (
+                                                <img
+                                                    src={candidate.url}
+                                                    alt={candidate.name}
+                                                    className="w-16 h-16 object-cover rounded mx-auto"
+                                                />
+                                            ) : (
+                                                <div className="w-16 h-16 bg-muted rounded mx-auto flex items-center justify-center text-xs text-muted-foreground">
+                                                    No Image
+                                                </div>
+                                            )}
                                         </td>
                                     </tr>
                                 ))}

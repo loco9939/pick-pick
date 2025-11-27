@@ -60,7 +60,7 @@ export default function IntroPage() {
     }
 
 
-    const thumbnail = worldcup.thumbnail_url || 'https://placehold.co/600x400/png?text=No+Image';
+    const thumbnail = worldcup.thumbnail_url || '';
 
     return (
         <div className="container mx-auto flex h-[calc(100vh-4rem)] flex-col items-center justify-center px-4">

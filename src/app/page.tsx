@@ -27,7 +27,7 @@ export default async function Home() {
             id={worldcup.id}
             title={worldcup.title}
             description={worldcup.description || ''}
-            thumbnailUrl={worldcup.thumbnail_url || 'https://placehold.co/600x400/png?text=No+Image'}
+            thumbnailUrl={worldcup.thumbnail_url || ''}
             totalPlays={worldcup.total_plays}
             candidateCount={worldcup.candidate_count || 0}
             actions={
