@@ -1,5 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import MyPage from './page';
+import MyPageClient from './MyPageClient';
 
 // Mock useRouter
 const mockPush = jest.fn();
@@ -12,6 +12,12 @@ jest.mock('next/navigation', () => ({
     })),
 }));
 
+// Mock UserContext
+const mockUseUser = jest.fn();
+jest.mock('@/context/UserContext', () => ({
+    useUser: () => mockUseUser(),
+}));
+
 // Mock Supabase client
 const mockSelect = jest.fn();
 const mockDelete = jest.fn();
@@ -21,9 +27,6 @@ const mockOrder = jest.fn();
 
 jest.mock('@/lib/supabase/client', () => ({
     supabase: {
-        auth: {
-            getUser: jest.fn(),
-        },
         from: () => ({
             select: mockSelect,
             delete: mockDelete,
@@ -36,8 +39,7 @@ jest.mock('@/lib/supabase/client', () => ({
 
 // Helper to setup mock chain
 const setupMocks = (user: any, worldcups: any[]) => {
-    const { supabase } = require('@/lib/supabase/client');
-    supabase.auth.getUser.mockResolvedValue({ data: { user }, error: null });
+    mockUseUser.mockReturnValue({ user, isLoading: false });
 
     mockSelect.mockReturnValue({
         eq: mockEq1.mockReturnValue({
@@ -58,23 +60,9 @@ describe('MyPage', () => {
     });
 
     it('redirects to login if not authenticated', async () => {
-        const { supabase } = require('@/lib/supabase/client');
-        supabase.auth.getUser.mockResolvedValue({ data: { user: null }, error: null });
+        mockUseUser.mockReturnValue({ user: null, isLoading: false });
 
-        // We can't easily spy on the return value of useRouter if it's already mocked in the factory.
-        // Instead, we can spy on the push function that our mock returns.
-        // But since we defined the mock factory to return a new object each time, we need a way to access it.
-        // A better approach is to use a spy on the module if possible, or just mock the implementation in the test.
-        // However, jest.mock is hoisted.
-
-        // Let's rely on the fact that we can't easily change the mock implementation of a hoisted mock in a test
-        // without some setup. But we can check if it was called if we use a shared mock function.
-
-        // Actually, the error was `(useRouter as jest.Mock).mockReturnValue is not a function`.
-        // This is because `useRouter` is the hook function itself.
-        // We should mock the hook to return our mock router object.
-
-        render(<MyPage />);
+        render(<MyPageClient />);
 
         await waitFor(() => {
             expect(mockPush).toHaveBeenCalledWith('/auth/login');
@@ -89,7 +77,7 @@ describe('MyPage', () => {
         ];
         setupMocks(mockUser, mockWorldCups);
 
-        render(<MyPage />);
+        render(<MyPageClient />);
 
         await waitFor(() => {
             expect(screen.getByText('My WorldCup 1')).toBeInTheDocument();
@@ -104,7 +92,7 @@ describe('MyPage', () => {
         ];
         setupMocks(mockUser, mockWorldCups);
 
-        render(<MyPage />);
+        render(<MyPageClient />);
 
         await waitFor(() => {
             expect(screen.getByText('Edit')).toBeInTheDocument();

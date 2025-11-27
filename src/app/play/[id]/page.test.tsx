@@ -13,15 +13,35 @@ const mockCandidates = [
     { id: '2', name: 'Candidate 2', image_url: 'https://example.com/url2.jpg' },
 ];
 
-// Mock useRouter
+// Mock useRouter and useParams
 jest.mock('next/navigation', () => ({
     useRouter: () => ({
         push: jest.fn(),
     }),
+    useParams: () => ({ id: '1' }),
 }));
+
+// Mock Supabase
+const mockSelect = jest.fn();
+const mockEq = jest.fn();
+
+jest.mock('@/lib/supabase/client', () => ({
+    supabase: {
+        from: () => ({
+            select: mockSelect,
+        }),
+        rpc: jest.fn().mockResolvedValue({ error: null }),
+    },
+}));
+
+mockSelect.mockReturnValue({
+    eq: mockEq,
+});
 
 describe('GamePlayPage', () => {
     beforeEach(() => {
+        mockEq.mockResolvedValue({ data: mockCandidates, error: null });
+
         mockUseGameLogic.mockReturnValue({
             gameState: {
                 round: '16강',
@@ -32,37 +52,39 @@ describe('GamePlayPage', () => {
             },
             getCurrentPair: jest.fn().mockReturnValue([mockCandidates[0], mockCandidates[1]]),
             selectWinner: jest.fn(),
+            sessionStats: {},
         });
     });
 
-    it('renders two game cards', () => {
-        render(<GamePlayPage params={{ id: '1' }} />);
+    it('renders two game cards', async () => {
+        render(<GamePlayPage />);
 
-        expect(screen.getByText('Candidate 1')).toBeInTheDocument();
+        await screen.findByText('Candidate 1');
         expect(screen.getByText('Candidate 2')).toBeInTheDocument();
     });
 
-    it('displays round information', () => {
-        render(<GamePlayPage params={{ id: '1' }} />);
+    it('displays round information', async () => {
+        render(<GamePlayPage />);
 
-        expect(screen.getByText('16강')).toBeInTheDocument();
+        await screen.findByText('16강');
         expect(screen.getByText('(1 / 8)')).toBeInTheDocument();
     });
 
-    it('calls selectWinner when a card is clicked', () => {
+    it('calls selectWinner when a card is clicked', async () => {
         const selectWinnerMock = jest.fn();
         mockUseGameLogic.mockReturnValue({
             ...mockUseGameLogic(),
             selectWinner: selectWinnerMock,
         });
 
-        render(<GamePlayPage params={{ id: '1' }} />);
+        render(<GamePlayPage />);
 
+        await screen.findByText('Candidate 1');
         fireEvent.click(screen.getByText('Candidate 1'));
         expect(selectWinnerMock).toHaveBeenCalledWith('1');
     });
 
-    it('redirects to result page when game ends', () => {
+    it('redirects to result page when game ends', async () => {
         mockUseGameLogic.mockReturnValue({
             gameState: {
                 round: '결승',
@@ -70,9 +92,10 @@ describe('GamePlayPage', () => {
             },
             getCurrentPair: jest.fn().mockReturnValue([]),
             selectWinner: jest.fn(),
+            sessionStats: {},
         });
 
-        render(<GamePlayPage params={{ id: '1' }} />);
+        render(<GamePlayPage />);
 
         // Since we mocked useRouter, we can check if push was called
         // Note: We need to access the mock instance to check calls.

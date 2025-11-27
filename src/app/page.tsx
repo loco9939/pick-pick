@@ -1,9 +1,12 @@
+
 import WorldCupCard from '@/components/worldcup/WorldCupCard';
-import { supabase } from '@/lib/supabase/client';
+import { createClient } from '@/lib/supabase/server';
+import StaggeredGrid, { StaggeredItem } from '@/components/ui/StaggeredGrid';
 
 export const revalidate = 0; // Disable caching for now to see updates immediately
 
 export default async function Home() {
+  const supabase = await createClient();
   const { data: worldcups, error } = await supabase
     .from('worldcups')
     .select('*')
@@ -17,22 +20,23 @@ export default async function Home() {
   return (
     <div className="container py-8">
       <h1 className="mb-8 text-3xl font-bold tracking-tight">Popular WorldCups</h1>
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <StaggeredGrid>
         {worldcups?.map((worldcup) => (
-          <WorldCupCard
-            key={worldcup.id}
-            id={worldcup.id}
-            title={worldcup.title}
-            description={worldcup.description || ''}
-            thumbnailUrl={worldcup.thumbnail_url || 'https://placehold.co/600x400/png?text=No+Image'}
-          />
+          <StaggeredItem key={worldcup.id}>
+            <WorldCupCard
+              id={worldcup.id}
+              title={worldcup.title}
+              description={worldcup.description || ''}
+              thumbnailUrl={worldcup.thumbnail_url || 'https://placehold.co/600x400/png?text=No+Image'}
+            />
+          </StaggeredItem>
         ))}
         {(!worldcups || worldcups.length === 0) && (
           <p className="text-muted-foreground col-span-full text-center py-10">
             No WorldCups found. Create one!
           </p>
         )}
-      </div>
+      </StaggeredGrid>
     </div>
   );
 }
