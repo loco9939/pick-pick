@@ -79,6 +79,7 @@ export default function EditForm({ worldcup, candidates: initialCandidates }: Ed
                     title,
                     description,
                     thumbnail_url: validCandidates[0].url, // Update thumbnail to first candidate
+                    candidate_count: selectedRound,
                 })
                 .eq('id', worldcup.id);
 

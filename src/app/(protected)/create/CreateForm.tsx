@@ -81,6 +81,7 @@ export default function CreateForm() {
                     description,
                     owner_id: user.id,
                     thumbnail_url: validCandidates[0].url, // Use first candidate as thumbnail
+                    candidate_count: selectedRound,
                 })
                 .select()
                 .single();

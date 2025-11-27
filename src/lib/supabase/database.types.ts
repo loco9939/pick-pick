@@ -43,6 +43,7 @@ export type Database = {
           is_deleted: boolean
           created_at: string
           total_plays: number
+          candidate_count: number
         }
         Insert: {
           id?: string
@@ -53,6 +54,7 @@ export type Database = {
           is_deleted?: boolean
           created_at?: string
           total_plays?: number
+          candidate_count?: number
         }
         Update: {
           id?: string
@@ -63,6 +65,7 @@ export type Database = {
           is_deleted?: boolean
           created_at?: string
           total_plays?: number
+          candidate_count?: number
         }
         Relationships: [
         ]

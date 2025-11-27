@@ -29,6 +29,7 @@ export default async function Home() {
             description={worldcup.description || ''}
             thumbnailUrl={worldcup.thumbnail_url || 'https://placehold.co/600x400/png?text=No+Image'}
             totalPlays={worldcup.total_plays}
+            candidateCount={worldcup.candidate_count || 0}
             actions={
               <div className="flex justify-end">
                 <Link href={`/play/${worldcup.id}/result`} className="text-sm font-medium text-primary hover:underline">

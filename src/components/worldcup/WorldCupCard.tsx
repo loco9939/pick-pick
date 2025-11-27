@@ -8,10 +8,11 @@ interface WorldCupCardProps {
     description: string;
     thumbnailUrl: string;
     totalPlays?: number;
+    candidateCount?: number;
     actions?: React.ReactNode;
 }
 
-const WorldCupCard: React.FC<WorldCupCardProps> = ({ id, title, description, thumbnailUrl, totalPlays, actions }) => {
+const WorldCupCard: React.FC<WorldCupCardProps> = ({ id, title, description, thumbnailUrl, totalPlays, candidateCount = 0, actions }) => {
     return (
         <div className="group relative block overflow-hidden rounded-xl border border-slate-800 bg-slate-900/50 text-slate-300 shadow-sm transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 hover:border-primary/50 hover:-translate-y-1">
             <Link href={`/play/${id}/intro`} className="block">
@@ -25,10 +26,15 @@ const WorldCupCard: React.FC<WorldCupCardProps> = ({ id, title, description, thu
                         </span>
                         {totalPlays ? totalPlays.toLocaleString() : 0} Plays
                     </div>
+
                 </div>
                 <div className="p-4">
-                    <h3 className="text-lg font-bold leading-tight text-white group-hover:text-primary transition-colors line-clamp-1">{title}</h3>
+                    <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-bold leading-tight text-white group-hover:text-primary transition-colors line-clamp-1">{title}</h3>
+                        <span className="text-sm text-slate-400">{candidateCount} Round</span>
+                    </div>
                     <p className="mt-2 text-sm text-slate-400 line-clamp-2">{description}</p>
+
                 </div>
             </Link>
             {actions && <div className="border-t border-slate-800 p-4 bg-slate-900/30">{actions}</div>}

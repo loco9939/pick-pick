@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase/client';
 import WorldCupCard from '@/components/worldcup/WorldCupCard';
 import { Database } from '@/lib/supabase/database.types';
 import { useUser } from '@/context/UserContext';
+import Link from 'next/link';
 
 type WorldCup = Database['public']['Tables']['worldcups']['Row'];
 
@@ -100,6 +101,8 @@ export default function MyPageClient() {
         return <div className="container py-8 text-center">Loading...</div>;
     }
 
+
+    console.log('====worldcups: ', worldcups)
     return (
         <div className="container mx-auto py-8 px-4">
             {/* Profile Section */}
@@ -174,20 +177,28 @@ export default function MyPageClient() {
                             description={wc.description || ''}
                             thumbnailUrl={wc.thumbnail_url || 'https://placehold.co/600x400/png?text=No+Image'}
                             totalPlays={wc.total_plays}
+                            candidateCount={wc.candidate_count || 0}
                             actions={
-                                <div className="flex gap-2 justify-end">
-                                    <button
-                                        onClick={() => router.push(`/edit/${wc.id}`)}
-                                        className="text-sm font-medium text-primary hover:underline"
-                                    >
-                                        Edit
-                                    </button>
-                                    <button
-                                        onClick={() => handleDelete(wc.id)}
-                                        className="text-sm font-medium text-destructive hover:underline"
-                                    >
-                                        Delete
-                                    </button>
+                                <div className="flex justify-between">
+                                    <div>
+                                        <Link href={`/play/${wc.id}/result`} className="text-sm font-medium text-primary hover:underline">
+                                            View Stats
+                                        </Link>
+                                    </div>
+                                    <div className='flex gap-4'>
+                                        <button
+                                            onClick={() => router.push(`/edit/${wc.id}`)}
+                                            className="text-sm font-medium text-primary hover:underline"
+                                        >
+                                            Edit
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(wc.id)}
+                                            className="text-sm font-medium text-destructive hover:underline"
+                                        >
+                                            Delete
+                                        </button>
+                                    </div>
                                 </div>
                             }
                         />
