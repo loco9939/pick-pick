@@ -1,12 +1,11 @@
 'use client';
 
-import React, { Suspense, useEffect, useState } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams, useRouter, useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import CommentList from '@/components/comment/CommentList';
 import { Button } from '@/components/ui/button';
+import CandidateThumbnail from '@/components/game/CandidateThumbnail';
 
 interface Candidate {
     id: string;
@@ -93,18 +92,6 @@ function ResultContent() {
         }
     }, [winner]);
 
-    const [imageError, setImageError] = useState(false);
-
-    const isValidUrl = React.useMemo(() => {
-        if (!winner?.image_url) return false;
-        try {
-            new URL(winner.image_url);
-            return true;
-        } catch {
-            return winner.image_url.startsWith('/');
-        }
-    }, [winner?.image_url]);
-
     const handleShare = () => {
         navigator.clipboard.writeText(window.location.href);
         alert('Link copied to clipboard!');
@@ -127,19 +114,10 @@ function ResultContent() {
                     <h1 className="mb-8 text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-fuchsia-400 animate-bounce">Winner!</h1>
 
                     <div className="relative aspect-video w-full max-w-3xl overflow-hidden rounded-2xl border-4 border-primary/50 shadow-[0_0_50px_rgba(139,92,246,0.3)] mb-8 flex items-center justify-center bg-slate-800 group">
-                        {!imageError && isValidUrl ? (
-                            <Image
-                                src={winner.image_url}
-                                alt={winner.name}
-                                fill
-                                className="object-contain transition-transform duration-700 group-hover:scale-105"
-                                onError={() => setImageError(true)}
-                            />
-                        ) : (
-                            <div className="flex flex-col items-center justify-center p-4 text-center">
-                                <span className="text-4xl font-bold text-slate-500">{winner.name}</span>
-                            </div>
-                        )}
+                        <CandidateThumbnail imageUrl={winner.image_url}
+                            name={winner.name}
+                            className="object-contain transition-transform duration-500 group-hover:scale-110"
+                            sizes="(max-width: 768px) 100vw, 50vw" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60" />
                         <div className="absolute bottom-0 left-0 right-0 p-6 text-center">
                             <h2 className="text-4xl font-bold text-white mb-2 drop-shadow-lg">{winner.name}</h2>
@@ -211,7 +189,10 @@ function ResultContent() {
                                     {index + 1}
                                 </div>
                                 <div className={`relative w-full ${isFirst ? 'h-64 md:h-80' : 'h-40'} mb-4 rounded-lg overflow-hidden bg-black flex items-center justify-center`}>
-                                    <CandidateThumbnail candidate={candidate} />
+                                    <CandidateThumbnail imageUrl={candidate.image_url}
+                                        name={candidate.name}
+                                        className="object-contain transition-transform duration-500 group-hover:scale-110"
+                                        sizes="(max-width: 768px) 100vw, 50vw" />
                                 </div>
                                 <div className="mt-auto">
                                     <h4 className={`font-bold text-white mb-2 ${isFirst ? 'text-2xl' : 'text-lg'} line-clamp-1`}>{candidate.name}</h4>
@@ -251,7 +232,10 @@ function ResultContent() {
                                     {realIndex}
                                 </div>
                                 <div className="relative h-12 w-12 overflow-hidden rounded-md bg-black">
-                                    <CandidateThumbnail candidate={candidate} />
+                                    <CandidateThumbnail imageUrl={candidate.image_url}
+                                        name={candidate.name}
+                                        className="object-contain transition-transform duration-500 group-hover:scale-110"
+                                        sizes="(max-width: 768px) 100vw, 50vw" />
                                 </div>
                                 <div className="flex-grow font-medium text-slate-300">
                                     {candidate.name}
@@ -279,37 +263,5 @@ function ResultContent() {
                 <CommentList worldcupId={id} />
             </div>
         </div>
-    );
-}
-
-function CandidateThumbnail({ candidate }: { candidate: Candidate }) {
-    const [error, setError] = useState(false);
-
-    const isValidUrl = React.useMemo(() => {
-        if (!candidate.image_url) return false;
-        try {
-            new URL(candidate.image_url);
-            return true;
-        } catch {
-            return candidate.image_url.startsWith('/');
-        }
-    }, [candidate.image_url]);
-
-    if (error || !isValidUrl) {
-        return (
-            <div className="flex h-full w-full items-center justify-center bg-muted text-xs font-bold text-muted-foreground">
-                {candidate.name.slice(0, 2)}
-            </div>
-        );
-    }
-
-    return (
-        <Image
-            src={candidate.image_url}
-            alt={candidate.name}
-            fill
-            className="object-contain"
-            onError={() => setError(true)}
-        />
     );
 }

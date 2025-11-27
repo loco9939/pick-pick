@@ -1,6 +1,6 @@
 import React from 'react';
-import Image from 'next/image';
 import { motion } from 'framer-motion';
+import CandidateThumbnail from './CandidateThumbnail';
 import { Candidate } from '@/hooks/useGameLogic';
 
 interface GameCardProps {
@@ -12,17 +12,6 @@ interface GameCardProps {
 }
 
 const GameCard: React.FC<GameCardProps> = ({ candidate, onClick, isSelected, isUnselected, side }) => {
-    const [imageError, setImageError] = React.useState(false);
-
-    const isValidUrl = React.useMemo(() => {
-        if (!candidate.image_url) return false;
-        try {
-            new URL(candidate.image_url);
-            return true;
-        } catch {
-            return candidate.image_url.startsWith('/');
-        }
-    }, [candidate.image_url]);
 
     const variants = {
         initial: { opacity: 0, scale: 0.9 },
@@ -69,23 +58,13 @@ const GameCard: React.FC<GameCardProps> = ({ candidate, onClick, isSelected, isU
             whileTap={!isSelected && !isUnselected ? { scale: 0.98 } : undefined}
         >
             <div className="relative flex-1 w-full overflow-hidden bg-muted flex items-center justify-center bg-black">
-                {!imageError && isValidUrl ? (
-                    <>
-                        <Image
-                            src={candidate.image_url}
-                            alt={candidate.name}
-                            fill
-                            className="object-contain transition-transform duration-500 group-hover:scale-110"
-                            sizes="(max-width: 768px) 100vw, 50vw"
-                            onError={() => setImageError(true)}
-                        />
-                        <div className={`absolute inset-0 bg-gradient-to-t ${gradientClass} to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100`} />
-                    </>
-                ) : (
-                    <div className="flex flex-col items-center justify-center h-full w-full p-4 text-center bg-black">
-                        <span className="text-2xl font-bold text-muted-foreground">{candidate.name}</span>
-                    </div>
-                )}
+                <CandidateThumbnail
+                    imageUrl={candidate.image_url}
+                    name={candidate.name}
+                    className="object-contain transition-transform duration-500 group-hover:scale-110"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                />
+                <div className={`absolute inset-0 bg-gradient-to-t ${gradientClass} to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100`} />
             </div>
             <div className="relative z-10 flex h-16 w-full items-center justify-center bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-4 border-t border-border/50">
                 <h3 className="text-lg font-bold tracking-tight group-hover:text-white transition-colors">{candidate.name}</h3>

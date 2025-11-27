@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
+import WorldCupThumbnail from '@/components/worldcup/WorldCupThumbnail';
 
 interface WorldCup {
     id: string;
@@ -24,7 +25,6 @@ export default function IntroPage() {
     const [worldcup, setWorldcup] = useState<WorldCup | null>(null);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
-    const [imageError, setImageError] = useState(false);
 
     useEffect(() => {
         const fetchWorldCup = async () => {
@@ -60,37 +60,15 @@ export default function IntroPage() {
     }
 
 
-
-    const isValidUrl = (url: string | null) => {
-        if (!url) return false;
-        try {
-            new URL(url);
-            return true;
-        } catch {
-            return url.startsWith('/');
-        }
-    };
-
     const thumbnail = worldcup.thumbnail_url || 'https://placehold.co/600x400/png?text=No+Image';
-    const isUrlValid = isValidUrl(thumbnail);
 
     return (
         <div className="container mx-auto flex h-[calc(100vh-4rem)] flex-col items-center justify-center px-4">
-            <div className="mb-8 relative h-64 w-64 overflow-hidden rounded-xl shadow-2xl md:h-96 md:w-96 bg-muted flex items-center justify-center">
-                {!imageError && isUrlValid ? (
-                    <Image
-                        src={thumbnail}
-                        alt={worldcup.title}
-                        fill
-                        className="object-contain"
-                        onError={() => setImageError(true)}
-                    />
-                ) : (
-                    <div className="flex flex-col items-center justify-center p-4 text-center">
-                        <span className="text-2xl font-bold text-muted-foreground">{worldcup.title}</span>
-                    </div>
-                )}
-            </div>
+            <WorldCupThumbnail
+                title={worldcup.title}
+                thumbnailUrl={thumbnail}
+                className="mb-8 h-64 w-64 rounded-xl shadow-2xl md:h-96 md:w-96"
+            />
 
             <h1 className="mb-4 text-center text-3xl font-bold md:text-5xl">{worldcup.title}</h1>
 

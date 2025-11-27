@@ -6,9 +6,10 @@ import Image from 'next/image';
 interface WorldCupThumbnailProps {
     title: string;
     thumbnailUrl: string;
+    className?: string;
 }
 
-const WorldCupThumbnail: React.FC<WorldCupThumbnailProps> = ({ title, thumbnailUrl }) => {
+const WorldCupThumbnail: React.FC<WorldCupThumbnailProps> = ({ title, thumbnailUrl, className }) => {
     const [imageError, setImageError] = useState(false);
 
     const isValidUrl = useMemo(() => {
@@ -22,7 +23,7 @@ const WorldCupThumbnail: React.FC<WorldCupThumbnailProps> = ({ title, thumbnailU
     }, [thumbnailUrl]);
 
     return (
-        <div className="aspect-video relative overflow-hidden bg-muted flex items-center justify-center">
+        <div className={`aspect-video relative overflow-hidden bg-muted flex items-center justify-center ${className}`}>
             {!imageError && isValidUrl ? (
                 <Image
                     src={thumbnailUrl}
