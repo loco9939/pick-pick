@@ -23,15 +23,12 @@ const RoundTransition: React.FC<RoundTransitionProps> = ({ round }) => {
                     type: "spring",
                     stiffness: 300,
                     damping: 20,
-                    duration: 0.5
+                    duration: 0.5,
                 }}
             >
                 <h2 className="text-6xl font-black tracking-tighter text-primary md:text-8xl">
                     {round}
                 </h2>
-                <p className="mt-4 text-xl font-medium text-muted-foreground animate-pulse">
-                    Starting...
-                </p>
             </motion.div>
         </motion.div>
     );

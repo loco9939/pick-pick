@@ -28,7 +28,7 @@ const WorldCupThumbnail: React.FC<WorldCupThumbnailProps> = ({ title, thumbnailU
                     src={thumbnailUrl}
                     alt={title}
                     fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="object-contain transition-transform duration-300 group-hover:scale-105"
                     onError={() => setImageError(true)}
                 />
             ) : (

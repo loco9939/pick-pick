@@ -13,6 +13,24 @@ jest.mock('@/components/worldcup/WorldCupCard', () => {
 const mockSelect = jest.fn();
 const mockOrder = jest.fn();
 
+jest.mock('@/lib/supabase/server', () => ({
+    createClient: jest.fn(() => ({
+        from: jest.fn(() => ({
+            select: jest.fn(() => ({
+                eq: jest.fn(() => ({
+                    order: jest.fn().mockResolvedValue({
+                        data: [
+                            { id: '1', title: 'Test WorldCup 1', description: 'Desc 1', thumbnail_url: 'url1', total_plays: 100 },
+                            { id: '2', title: 'Test WorldCup 2', description: 'Desc 2', thumbnail_url: 'url2', total_plays: 50 },
+                        ],
+                        error: null,
+                    }),
+                })),
+            })),
+        })),
+    })),
+}));
+
 jest.mock('@/lib/supabase/client', () => ({
     supabase: {
         from: () => ({

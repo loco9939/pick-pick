@@ -68,7 +68,7 @@ describe('GamePlayPage', () => {
         render(<GamePlayPage />);
 
         await screen.findByText('16강');
-        expect(screen.getByText('(1 / 8)')).toBeInTheDocument();
+        expect(screen.getByText('Match 1 / 8')).toBeInTheDocument();
     });
 
     it('calls selectWinner when a card is clicked after animation delay', async () => {

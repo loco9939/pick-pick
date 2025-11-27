@@ -113,21 +113,27 @@ export default function GamePlayPage() {
     if (!left || !right) return null;
 
     return (
-        <div className="relative h-[calc(100vh-4rem)] w-full overflow-hidden bg-background">
+        <div className="relative h-[calc(100dvh-4rem)] w-full overflow-hidden bg-background">
             <AnimatePresence>
                 {showRoundTransition && (
                     <RoundTransition round={gameState.round} />
                 )}
             </AnimatePresence>
 
-            {/* Round Indicator */}
-            <div className="absolute top-4 left-1/2 z-50 -translate-x-1/2 rounded-full bg-background/80 px-6 py-2 text-lg font-bold backdrop-blur shadow-sm border">
-                {gameState.round} <span className="text-sm font-normal text-muted-foreground ml-2">({gameState.currentMatch} / {gameState.totalMatches})</span>
+            {/* Progress Bar */}
+            <div className="absolute top-0 left-0 right-0 z-[60] h-1 bg-slate-800">
+                <motion.div
+                    className="h-full bg-gradient-to-r from-violet-500 to-fuchsia-500"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${(gameState.currentMatch / gameState.totalMatches) * 100}%` }}
+                    transition={{ duration: 0.3 }}
+                />
             </div>
 
-            {/* VS Badge */}
-            <div className="absolute top-1/2 left-1/2 z-50 -translate-x-1/2 -translate-y-1/2 flex h-16 w-16 items-center justify-center rounded-full bg-background font-black text-2xl shadow-xl border-4 border-primary/20">
-                VS
+            {/* Round Indicator */}
+            <div className="absolute top-4 left-1/2 z-[60] -translate-x-1/2 flex flex-col items-center justify-center rounded-lg bg-slate-900/80 px-3 py-1.5 md:top-6 md:px-4 md:py-2 backdrop-blur-md border border-slate-700 shadow-lg text-center">
+                <p className="text-lg font-bold text-white tracking-wider md:text-xl">{gameState.round}</p>
+                <p className="text-[10px] font-medium text-slate-400 md:text-xs">Match {gameState.currentMatch} / {gameState.totalMatches}</p>
             </div>
 
             {!showRoundTransition && (
@@ -136,47 +142,66 @@ export default function GamePlayPage() {
                         {(!selectedId || selectedId === left.id) && (
                             <motion.div
                                 layout
-                                key="left-card"
+                                key={left.id}
                                 className={`
-                                    ${selectedId === left.id ? 'absolute inset-0 z-20 h-full w-full p-4' : 'relative h-1/2 w-full md:h-full md:w-1/2 p-2 md:p-4'}
+                                    relative flex-1 w-full md:h-full
+                                    ${selectedId === left.id ? 'absolute inset-0 z-30 h-full' : ''}
                                 `}
                                 initial={{ opacity: 0, x: -50 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.3 } }}
+                                exit={{ opacity: 0, scale: 0.9, filter: "blur(10px)", transition: { duration: 0.3 } }}
                                 transition={{
                                     layout: { duration: 0.5, type: "spring", bounce: 0.2 },
                                     opacity: { duration: 0.3 }
                                 }}
                             >
-                                <GameCard
-                                    candidate={left}
-                                    onClick={() => handleSelect(left.id)}
-                                    isSelected={selectedId === left.id}
-                                    isUnselected={selectedId !== null && selectedId !== left.id}
-                                />
+                                <div className="h-full w-full p-2 md:p-0">
+                                    <GameCard
+                                        candidate={left}
+                                        onClick={() => handleSelect(left.id)}
+                                        isSelected={selectedId === left.id}
+                                        isUnselected={selectedId !== null && selectedId !== left.id}
+                                        side="left"
+                                    />
+                                </div>
                             </motion.div>
                         )}
+
+                        {/* VS Badge */}
+                        <div className="absolute top-1/2 left-1/2 z-20 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+                            <div className="relative flex h-16 w-16 md:h-20 md:w-20 items-center justify-center rounded-full bg-slate-900 border-4 border-slate-700 shadow-[0_0_30px_rgba(139,92,246,0.5)]">
+                                <span className="text-2xl md:text-3xl font-black italic text-transparent bg-clip-text bg-gradient-to-br from-cyan-400 to-rose-500">
+                                    VS
+                                </span>
+                                <div className="absolute inset-0 rounded-full animate-pulse bg-gradient-to-tr from-cyan-500/20 to-rose-500/20 blur-xl" />
+                            </div>
+                        </div>
+
                         {(!selectedId || selectedId === right.id) && (
                             <motion.div
                                 layout
-                                key="right-card"
+                                key={right.id}
                                 className={`
-                                    ${selectedId === right.id ? 'absolute inset-0 z-20 h-full w-full p-4' : 'relative h-1/2 w-full md:h-full md:w-1/2 p-2 md:p-4'}
+                                    relative flex-1 w-full md:h-full
+                                    ${selectedId === right.id ? 'absolute inset-0 z-30 h-full' : ''}
                                 `}
                                 initial={{ opacity: 0, x: 50 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.3 } }}
+                                exit={{ opacity: 0, scale: 0.9, filter: "blur(10px)", transition: { duration: 0.3 } }}
                                 transition={{
                                     layout: { duration: 0.5, type: "spring", bounce: 0.2 },
                                     opacity: { duration: 0.3 }
                                 }}
                             >
-                                <GameCard
-                                    candidate={right}
-                                    onClick={() => handleSelect(right.id)}
-                                    isSelected={selectedId === right.id}
-                                    isUnselected={selectedId !== null && selectedId !== right.id}
-                                />
+                                <div className="h-full w-full p-2 md:p-0">
+                                    <GameCard
+                                        candidate={right}
+                                        onClick={() => handleSelect(right.id)}
+                                        isSelected={selectedId === right.id}
+                                        isUnselected={selectedId !== null && selectedId !== right.id}
+                                        side="right"
+                                    />
+                                </div>
                             </motion.div>
                         )}
                     </AnimatePresence>

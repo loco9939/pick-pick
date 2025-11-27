@@ -112,7 +112,7 @@ export default function CreateForm() {
     };
 
     return (
-        <div className="container max-w-4xl py-8">
+        <div className="container mx-auto max-w-4xl py-12 px-6">
             <div className="mb-8">
                 <h1 className="text-3xl font-bold tracking-tight">Create New WorldCup</h1>
                 <p className="text-muted-foreground">Create your own ideal type worldcup tournament.</p>
@@ -120,7 +120,7 @@ export default function CreateForm() {
 
             <form onSubmit={handleSubmit} className="space-y-8">
                 {error && (
-                    <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
+                    <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive text-red-500">
                         {error}
                     </div>
                 )}
@@ -176,9 +176,10 @@ export default function CreateForm() {
                         <table className="w-full caption-bottom text-sm">
                             <thead className="[&_tr]:border-b">
                                 <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[50px]">#</th>
-                                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[200px]">Candidate Name</th>
-                                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Image URL</th>
+                                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">#</th>
+                                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-1/2 min-w-[150px]">Candidate Name</th>
+                                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-1/2 min-w-[150px]">Image URL</th>
+                                    <th className="h-12 px-4 text-center align-middle font-medium text-muted-foreground w-[150px]">Preview</th>
                                 </tr>
                             </thead>
                             <tbody className="[&_tr:last-child]:border-0">
@@ -201,6 +202,13 @@ export default function CreateForm() {
                                                 onChange={(e) => handleCandidateChange(index, 'url', e.target.value)}
                                                 className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                                                 placeholder="https://example.com/image.jpg"
+                                            />
+                                        </td>
+                                        <td className="p-4 align-middle text-center">
+                                            <img
+                                                src={candidate.url}
+                                                alt={candidate.name}
+                                                className="w-16 h-16 object-cover rounded mx-auto"
                                             />
                                         </td>
                                     </tr>

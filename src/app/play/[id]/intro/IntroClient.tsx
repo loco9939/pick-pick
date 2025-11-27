@@ -82,7 +82,7 @@ export default function IntroPage() {
                         src={thumbnail}
                         alt={worldcup.title}
                         fill
-                        className="object-cover"
+                        className="object-contain"
                         onError={() => setImageError(true)}
                     />
                 ) : (

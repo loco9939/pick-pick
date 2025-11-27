@@ -65,8 +65,8 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="container flex h-screen w-screen flex-col items-center justify-center">
-            <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
+        <div className="flex flex-col items-center justify-center px-4">
+            <div className="mx-auto flex w-full flex-col justify-center space-y-6 max-w-[500px] min-h-[calc(100vh-256px)]">
                 <div className="flex flex-col space-y-2 text-center">
                     <h1 className="text-2xl font-semibold tracking-tight">
                         {isSignUp ? 'Create an account' : 'Welcome back'}
