@@ -6,9 +6,11 @@ import { Candidate } from '@/hooks/useGameLogic';
 interface GameCardProps {
     candidate: Candidate;
     onClick: () => void;
+    isSelected?: boolean;
+    isUnselected?: boolean;
 }
 
-const GameCard: React.FC<GameCardProps> = ({ candidate, onClick }) => {
+const GameCard: React.FC<GameCardProps> = ({ candidate, onClick, isSelected, isUnselected }) => {
     const [imageError, setImageError] = React.useState(false);
 
     const isValidUrl = React.useMemo(() => {
@@ -21,15 +23,33 @@ const GameCard: React.FC<GameCardProps> = ({ candidate, onClick }) => {
         }
     }, [candidate.image_url]);
 
+    const variants = {
+        initial: { opacity: 0, scale: 0.9 },
+        animate: { opacity: 1, scale: 1 },
+        selected: {
+            scale: 1.1,
+            opacity: 1,
+            zIndex: 10,
+            boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
+            transition: { duration: 0.5 }
+        },
+        unselected: {
+            scale: 0.8,
+            opacity: 0,
+            filter: "grayscale(100%) blur(4px)",
+            transition: { duration: 0.5 }
+        }
+    };
+
     return (
         <motion.button
             onClick={onClick}
             className="group relative flex h-full w-full flex-col overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-            whileHover={{ scale: 1.02, boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)" }}
-            whileTap={{ scale: 0.98 }}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3 }}
+            variants={variants}
+            initial="initial"
+            animate={isSelected ? "selected" : isUnselected ? "unselected" : "animate"}
+            whileHover={!isSelected && !isUnselected ? { scale: 1.02, boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)" } : undefined}
+            whileTap={!isSelected && !isUnselected ? { scale: 0.98 } : undefined}
         >
             <div className="relative flex-1 w-full overflow-hidden bg-muted flex items-center justify-center">
                 {!imageError && isValidUrl ? (

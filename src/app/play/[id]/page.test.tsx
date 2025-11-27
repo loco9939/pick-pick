@@ -51,6 +51,7 @@ describe('GamePlayPage', () => {
                 winner: undefined,
             },
             getCurrentPair: jest.fn().mockReturnValue([mockCandidates[0], mockCandidates[1]]),
+            getNextPair: jest.fn().mockReturnValue(null),
             selectWinner: jest.fn(),
             sessionStats: {},
         });
@@ -70,18 +71,30 @@ describe('GamePlayPage', () => {
         expect(screen.getByText('(1 / 8)')).toBeInTheDocument();
     });
 
-    it('calls selectWinner when a card is clicked', async () => {
+    it('calls selectWinner when a card is clicked after animation delay', async () => {
+        jest.useFakeTimers();
         const selectWinnerMock = jest.fn();
+        const getNextPairMock = jest.fn().mockReturnValue(null);
+
         mockUseGameLogic.mockReturnValue({
             ...mockUseGameLogic(),
             selectWinner: selectWinnerMock,
+            getNextPair: getNextPairMock,
         });
 
         render(<GamePlayPage />);
 
         await screen.findByText('Candidate 1');
         fireEvent.click(screen.getByText('Candidate 1'));
+
+        // Should not be called immediately
+        expect(selectWinnerMock).not.toHaveBeenCalled();
+
+        // Fast-forward time
+        jest.advanceTimersByTime(800);
+
         expect(selectWinnerMock).toHaveBeenCalledWith('1');
+        jest.useRealTimers();
     });
 
     it('redirects to result page when game ends', async () => {

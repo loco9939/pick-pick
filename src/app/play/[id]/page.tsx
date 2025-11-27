@@ -1,18 +1,35 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import useGameLogic, { Candidate } from '@/hooks/useGameLogic';
 import GameCard from '@/components/game/GameCard';
+import RoundTransition from '@/components/game/RoundTransition';
 import { useRouter, useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function GamePlayPage() {
     const params = useParams();
     const id = params.id as string;
     const [candidates, setCandidates] = useState<Candidate[]>([]);
     const [loading, setLoading] = useState(true);
-    const { gameState, getCurrentPair, selectWinner, sessionStats } = useGameLogic(candidates);
+    const { gameState, getCurrentPair, getNextPair, selectWinner, sessionStats } = useGameLogic(candidates);
     const router = useRouter();
+    const [selectedId, setSelectedId] = useState<string | null>(null);
+    const [showRoundTransition, setShowRoundTransition] = useState(false);
+    const [previousRound, setPreviousRound] = useState<string>('');
+
+    // Handle round transition
+    useLayoutEffect(() => {
+        if (gameState.round && previousRound && gameState.round !== previousRound && !gameState.winner) {
+            setShowRoundTransition(true);
+            const timer = setTimeout(() => {
+                setShowRoundTransition(false);
+            }, 2000);
+            return () => clearTimeout(timer);
+        }
+        setPreviousRound(gameState.round);
+    }, [gameState.round, previousRound, gameState.winner]);
 
     useEffect(() => {
         const fetchCandidates = async () => {
@@ -33,6 +50,26 @@ export default function GamePlayPage() {
 
         fetchCandidates();
     }, [id]);
+
+    const handleSelect = (id: string) => {
+        if (selectedId) return; // Prevent double clicks
+        setSelectedId(id);
+
+        // Preload next images
+        const nextPair = getNextPair();
+        if (nextPair) {
+            nextPair.forEach(candidate => {
+                const img = new Image();
+                img.src = candidate.image_url;
+            });
+        }
+
+        // Wait for animation
+        setTimeout(() => {
+            selectWinner(id);
+            setSelectedId(null);
+        }, 800); // 800ms animation duration
+    };
 
     useEffect(() => {
         if (gameState.winner) {
@@ -77,6 +114,12 @@ export default function GamePlayPage() {
 
     return (
         <div className="relative h-[calc(100vh-4rem)] w-full overflow-hidden bg-background">
+            <AnimatePresence>
+                {showRoundTransition && (
+                    <RoundTransition round={gameState.round} />
+                )}
+            </AnimatePresence>
+
             {/* Round Indicator */}
             <div className="absolute top-4 left-1/2 z-50 -translate-x-1/2 rounded-full bg-background/80 px-6 py-2 text-lg font-bold backdrop-blur shadow-sm border">
                 {gameState.round} <span className="text-sm font-normal text-muted-foreground ml-2">({gameState.currentMatch} / {gameState.totalMatches})</span>
@@ -87,14 +130,58 @@ export default function GamePlayPage() {
                 VS
             </div>
 
-            <div className="flex h-full w-full flex-col md:flex-row">
-                <div className="relative h-1/2 w-full md:h-full md:w-1/2 p-2 md:p-4">
-                    <GameCard candidate={left} onClick={() => selectWinner(left.id)} />
+            {!showRoundTransition && (
+                <div className="relative flex h-full w-full flex-col md:flex-row">
+                    <AnimatePresence mode="popLayout">
+                        {(!selectedId || selectedId === left.id) && (
+                            <motion.div
+                                layout
+                                key="left-card"
+                                className={`
+                                    ${selectedId === left.id ? 'absolute inset-0 z-20 h-full w-full p-4' : 'relative h-1/2 w-full md:h-full md:w-1/2 p-2 md:p-4'}
+                                `}
+                                initial={{ opacity: 0, x: -50 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.3 } }}
+                                transition={{
+                                    layout: { duration: 0.5, type: "spring", bounce: 0.2 },
+                                    opacity: { duration: 0.3 }
+                                }}
+                            >
+                                <GameCard
+                                    candidate={left}
+                                    onClick={() => handleSelect(left.id)}
+                                    isSelected={selectedId === left.id}
+                                    isUnselected={selectedId !== null && selectedId !== left.id}
+                                />
+                            </motion.div>
+                        )}
+                        {(!selectedId || selectedId === right.id) && (
+                            <motion.div
+                                layout
+                                key="right-card"
+                                className={`
+                                    ${selectedId === right.id ? 'absolute inset-0 z-20 h-full w-full p-4' : 'relative h-1/2 w-full md:h-full md:w-1/2 p-2 md:p-4'}
+                                `}
+                                initial={{ opacity: 0, x: 50 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.3 } }}
+                                transition={{
+                                    layout: { duration: 0.5, type: "spring", bounce: 0.2 },
+                                    opacity: { duration: 0.3 }
+                                }}
+                            >
+                                <GameCard
+                                    candidate={right}
+                                    onClick={() => handleSelect(right.id)}
+                                    isSelected={selectedId === right.id}
+                                    isUnselected={selectedId !== null && selectedId !== right.id}
+                                />
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </div>
-                <div className="relative h-1/2 w-full md:h-full md:w-1/2 p-2 md:p-4">
-                    <GameCard candidate={right} onClick={() => selectWinner(right.id)} />
-                </div>
-            </div>
+            )}
         </div>
     );
 }

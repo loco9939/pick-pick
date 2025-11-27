@@ -41,6 +41,14 @@ export default function useGameLogic(initialCandidates: Candidate[]) {
         return [candidates[currentMatchIndex * 2], candidates[currentMatchIndex * 2 + 1]];
     }, [candidates, currentMatchIndex]);
 
+    const getNextPair = useCallback((): [Candidate, Candidate] | null => {
+        const nextIndex = currentMatchIndex + 1;
+        if (nextIndex * 2 + 1 < candidates.length) {
+            return [candidates[nextIndex * 2], candidates[nextIndex * 2 + 1]];
+        }
+        return null;
+    }, [candidates, currentMatchIndex]);
+
     const selectWinner = useCallback(async (winnerId: string) => {
         const currentPair = getCurrentPair();
         const winner = currentPair.find((c) => c.id === winnerId);
@@ -97,6 +105,7 @@ export default function useGameLogic(initialCandidates: Candidate[]) {
     return {
         gameState,
         getCurrentPair,
+        getNextPair,
         selectWinner,
         sessionStats
     };
