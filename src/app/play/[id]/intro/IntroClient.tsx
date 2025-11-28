@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import WorldCupThumbnail from '@/components/worldcup/WorldCupThumbnail';
+import Loading from '@/components/common/Loading';
 
 interface WorldCup {
     id: string;
@@ -52,7 +53,7 @@ export default function IntroPage() {
     }, [id]);
 
     if (loading) {
-        return <div className="flex h-screen items-center justify-center">Loading...</div>;
+        return <Loading />;
     }
 
     if (!worldcup) {

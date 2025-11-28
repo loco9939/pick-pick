@@ -7,6 +7,7 @@ import RoundTransition from '@/components/game/RoundTransition';
 import { useRouter, useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
+import Loading from '@/components/common/Loading';
 
 export default function GamePlayPage() {
     const params = useParams();
@@ -107,12 +108,7 @@ export default function GamePlayPage() {
     }, [gameState.winner, id, router, sessionStats]);
 
     if (loading || isRedirecting) return (
-        <div className="flex h-screen flex-col items-center justify-center gap-4 bg-background">
-            <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-            <p className="text-lg font-medium text-muted-foreground animate-pulse">
-                {isRedirecting ? 'Calculating Results...' : 'Loading...'}
-            </p>
-        </div>
+        <Loading text={isRedirecting ? 'Calculating Results...' : 'Loading...'} />
     );
     if (candidates.length === 0) return <div className="flex h-screen items-center justify-center">No candidates found</div>;
     if (gameState.winner) return null; // Redirecting...

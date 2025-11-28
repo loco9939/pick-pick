@@ -6,6 +6,8 @@ import { supabase } from '@/lib/supabase/client';
 import CommentList from '@/components/comment/CommentList';
 import { Button } from '@/components/ui/button';
 import CandidateThumbnail from '@/components/game/CandidateThumbnail';
+import Loading from '@/components/common/Loading';
+import ImagePreviewModal from '@/components/common/ImagePreviewModal';
 
 interface Candidate {
     id: string;
@@ -34,6 +36,7 @@ function ResultContent() {
     const router = useRouter();
 
     const [ranking, setRanking] = useState<Candidate[]>([]);
+    const [previewImage, setPreviewImage] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -98,7 +101,7 @@ function ResultContent() {
     };
 
     if (loading) {
-        return <div className="flex h-screen items-center justify-center">Loading...</div>;
+        return <Loading />;
     }
 
     return (
@@ -113,7 +116,7 @@ function ResultContent() {
 
                     <h1 className="mb-8 text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-fuchsia-400 animate-bounce">Winner!</h1>
 
-                    <div className="relative aspect-video w-full max-w-3xl overflow-hidden rounded-2xl border-4 border-primary/50 shadow-[0_0_50px_rgba(139,92,246,0.3)] flex items-center justify-center bg-slate-800 group">
+                    <div className="relative cursor-pointer aspect-video w-full max-w-3xl overflow-hidden rounded-2xl border-4 border-primary/50 shadow-[0_0_50px_rgba(139,92,246,0.3)] flex items-center justify-center bg-slate-800 group" onClick={() => setPreviewImage(winner.image_url)}>
                         <CandidateThumbnail imageUrl={winner.image_url}
                             name={winner.name}
                             className="object-contain transition-transform duration-500 group-hover:scale-110"
@@ -185,7 +188,7 @@ function ResultContent() {
                                 <div className="absolute top-3 left-3 z-10 flex items-center justify-center w-8 h-8 rounded-full bg-black/50 font-bold text-white border border-white/10">
                                     {index + 1}
                                 </div>
-                                <div className={`relative w-full ${isFirst ? 'h-64 md:h-80' : 'h-40'} mb-4 rounded-lg overflow-hidden bg-black flex items-center justify-center`}>
+                                <div className={`relative w-full cursor-pointer ${isFirst ? 'h-64 md:h-80' : 'h-40'} mb-4 rounded-lg overflow-hidden bg-black flex items-center justify-center`} onClick={() => setPreviewImage(candidate.image_url)}>
                                     <CandidateThumbnail imageUrl={candidate.image_url}
                                         name={candidate.name}
                                         className="object-contain transition-transform duration-500 group-hover:scale-110"
@@ -228,7 +231,7 @@ function ResultContent() {
                                 <div className="flex-shrink-0 w-8 text-center font-bold text-slate-500">
                                     {realIndex}
                                 </div>
-                                <div className="relative h-12 w-12 overflow-hidden rounded-md bg-black">
+                                <div className="relative cursor-pointer h-12 w-12 overflow-hidden rounded-md bg-black" onClick={() => setPreviewImage(candidate.image_url)}>
                                     <CandidateThumbnail imageUrl={candidate.image_url}
                                         name={candidate.name}
                                         className="object-contain transition-transform duration-500 group-hover:scale-110"
@@ -259,6 +262,13 @@ function ResultContent() {
                 <h3 className="text-2xl font-bold mb-6">Comments</h3>
                 <CommentList worldcupId={id} />
             </div>
+
+            {/* Image Preview Modal */}
+            <ImagePreviewModal
+                isOpen={!!previewImage}
+                imageUrl={previewImage}
+                onClose={() => setPreviewImage(null)}
+            />
         </div>
     );
 }

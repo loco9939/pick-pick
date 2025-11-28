@@ -7,6 +7,7 @@ import WorldCupCard from '@/components/worldcup/WorldCupCard';
 import { Database } from '@/lib/supabase/database.types';
 import { useUser } from '@/context/UserContext';
 import Link from 'next/link';
+import Loading from '@/components/common/Loading';
 
 type WorldCup = Database['public']['Tables']['worldcups']['Row'];
 
@@ -98,7 +99,7 @@ export default function MyPageClient() {
     };
 
     if (isUserLoading || isDataLoading) {
-        return <div className="container py-8 text-center">Loading...</div>;
+        return <Loading fullScreen={false} />;
     }
 
 
