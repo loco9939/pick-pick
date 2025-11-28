@@ -28,7 +28,7 @@ export default function HeroSection({ worldcup }: HeroSectionProps) {
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                         <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
                     </span>
-                    Real-time participant surge 🔥
+                    Real-time hot world cup 🔥
                 </div>
 
                 <h1 className="mb-4 max-w-2xl text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
@@ -53,7 +53,7 @@ export default function HeroSection({ worldcup }: HeroSectionProps) {
 
                     <Link
                         href={`/play/${worldcup.id}/result`}
-                        className="inline-flex items-center justify-center rounded-full border border-input bg-background/50 px-8 py-4 text-lg font-medium backdrop-blur-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+                        className="inline-flex items-center justify-center rounded-full border border-input bg-background/50 px-8 py-4 text-lg font-medium backdrop-blur-sm transition-all hover:bg-accent hover:text-accent-foreground hover:scale-105 hover:shadow-lg"
                     >
                         View ranking
                     </Link>

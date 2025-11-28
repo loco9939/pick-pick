@@ -8,9 +8,10 @@ interface CommentFormProps {
     worldcupId: string;
     parentId?: string;
     onCommentAdded: () => void;
+    onCancel?: () => void;
 }
 
-export default function CommentForm({ worldcupId, parentId, onCommentAdded }: CommentFormProps) {
+export default function CommentForm({ worldcupId, parentId, onCommentAdded, onCancel }: CommentFormProps) {
     const [content, setContent] = useState('');
     const [nickname, setNickname] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -53,25 +54,47 @@ export default function CommentForm({ worldcupId, parentId, onCommentAdded }: Co
 
     return (
         <form onSubmit={handleSubmit} className="mt-4 space-y-2">
-            <input
-                type="text"
-                value={nickname}
-                onChange={(e) => setNickname(e.target.value)}
-                placeholder="Nickname"
-                className="w-full rounded-md border p-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary md:w-1/3"
-                disabled={isSubmitting}
-                required
-            />
-            <textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="Add a comment..."
-                className="w-full rounded-md border p-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                rows={3}
-                disabled={isSubmitting}
-                required
-            />
-            <div className="flex justify-end">
+            <div>
+                <label htmlFor="nickname" className="block text-sm font-medium text-slate-300 mb-1">
+                    Nickname
+                </label>
+                <input
+                    type="text"
+                    id="nickname"
+                    value={nickname}
+                    onChange={(e) => setNickname(e.target.value)}
+                    placeholder="Nickname"
+                    className="w-full rounded-md border p-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary md:w-1/3"
+                    disabled={isSubmitting}
+                    required
+                />
+            </div>
+            <div>
+                <label htmlFor="content" className="block text-sm font-medium text-slate-300 mb-1">
+                    Comment
+                </label>
+                <textarea
+                    id="content"
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    placeholder="Add a comment..."
+                    className="w-full rounded-md border p-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary resize-none"
+                    rows={3}
+                    disabled={isSubmitting}
+                    required
+                />
+            </div>
+            <div className="flex justify-end gap-2">
+                {onCancel && (
+                    <button
+                        type="button"
+                        onClick={onCancel}
+                        className="rounded-md px-4 py-2 text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
+                        disabled={isSubmitting}
+                    >
+                        Cancel
+                    </button>
+                )}
                 <button
                     type="submit"
                     disabled={isSubmitting || !content.trim() || !nickname.trim()}

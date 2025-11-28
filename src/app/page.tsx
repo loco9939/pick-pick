@@ -5,23 +5,27 @@ import HeroSection from '@/components/home/HeroSection';
 import CategoryChips from '@/components/home/CategoryChips';
 import RealTimeTicker from '@/components/home/RealTimeTicker';
 import EmptyState from '@/components/home/EmptyState';
+import Pagination from '@/components/common/Pagination';
 import { createClient } from '@/lib/supabase/server';
-import { Play, PlayCircle } from 'lucide-react';
+import { Play } from 'lucide-react';
 
 export const revalidate = 0; // Disable caching for now to see updates immediately
+
+const PAGE_SIZE = 12;
 
 export default async function Home({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string }>;
+  searchParams: Promise<{ category?: string; page?: string }>;
 }) {
   const params = await searchParams;
   const category = params.category;
+  const page = Number(params.page) || 1;
   const supabase = await createClient();
 
   let query = supabase
     .from('worldcups')
-    .select('*')
+    .select('*', { count: 'exact' })
     .eq('is_deleted', false)
     .order('total_plays', { ascending: false });
 
@@ -29,11 +33,16 @@ export default async function Home({
     query = query.eq('category', category);
   }
 
-  const { data: worldcups, error } = await query;
+  const from = (page - 1) * PAGE_SIZE;
+  const to = from + PAGE_SIZE - 1;
+
+  const { data: worldcups, count, error } = await query.range(from, to);
 
   if (error) {
     console.error('Error fetching worldcups:', error);
   }
+
+  const totalPages = count ? Math.ceil(count / PAGE_SIZE) : 0;
 
   // Fetch best worldcup for Hero Section (independent of category)
   const { data: bestWorldCup } = await supabase
@@ -88,6 +97,13 @@ export default async function Home({
           ))}
           {(!worldcups || worldcups.length === 0) && <EmptyState />}
         </div>
+
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          baseUrl="/"
+          searchParams={params}
+        />
       </div>
     </>
 
