@@ -66,7 +66,7 @@ const GameCard: React.FC<GameCardProps> = ({ candidate, onClick, isSelected, isU
                 />
                 <div className={`absolute inset-0 bg-gradient-to-t ${gradientClass} to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100`} />
             </div>
-            <div className="relative z-10 flex h-16 w-full items-center justify-center bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-4 border-t border-border/50">
+            <div className="relative z-10 flex pt-2 w-full items-center justify-center bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-border/50">
                 <h3 className="text-lg font-bold tracking-tight group-hover:text-white transition-colors">{candidate.name}</h3>
             </div>
         </motion.button>

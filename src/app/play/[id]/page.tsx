@@ -18,6 +18,7 @@ export default function GamePlayPage() {
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [showRoundTransition, setShowRoundTransition] = useState(false);
     const [previousRound, setPreviousRound] = useState<string>('');
+    const [isRedirecting, setIsRedirecting] = useState(false);
 
     // Handle round transition
     useLayoutEffect(() => {
@@ -73,6 +74,7 @@ export default function GamePlayPage() {
 
     useEffect(() => {
         if (gameState.winner) {
+            setIsRedirecting(true); // Start loading spinner
             // Update stats before redirecting
             const updateStats = async () => {
                 // Prepare batch updates
@@ -104,7 +106,14 @@ export default function GamePlayPage() {
         }
     }, [gameState.winner, id, router, sessionStats]);
 
-    if (loading) return <div className="flex h-screen items-center justify-center">Loading...</div>;
+    if (loading || isRedirecting) return (
+        <div className="flex h-screen flex-col items-center justify-center gap-4 bg-background">
+            <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+            <p className="text-lg font-medium text-muted-foreground animate-pulse">
+                {isRedirecting ? 'Calculating Results...' : 'Loading...'}
+            </p>
+        </div>
+    );
     if (candidates.length === 0) return <div className="flex h-screen items-center justify-center">No candidates found</div>;
     if (gameState.winner) return null; // Redirecting...
 
@@ -168,14 +177,16 @@ export default function GamePlayPage() {
                         )}
 
                         {/* VS Badge */}
-                        <div className="absolute top-1/2 left-1/2 z-20 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-                            <div className="relative flex h-16 w-16 md:h-20 md:w-20 items-center justify-center rounded-full bg-slate-900 border-4 border-slate-700 shadow-[0_0_30px_rgba(139,92,246,0.5)]">
-                                <span className="text-2xl md:text-3xl font-black italic text-transparent bg-clip-text bg-gradient-to-br from-cyan-400 to-rose-500">
-                                    VS
-                                </span>
-                                <div className="absolute inset-0 rounded-full animate-pulse bg-gradient-to-tr from-cyan-500/20 to-rose-500/20 blur-xl" />
+                        {!selectedId && (
+                            <div className="relative z-20 flex shrink-0 items-center justify-center md:absolute md:top-1/2 md:left-1/2 md:py-0 md:-translate-x-1/2 md:-translate-y-1/2 pointer-events-none">
+                                <div className="relative flex h-16 w-16 md:h-20 md:w-20 items-center justify-center rounded-full bg-slate-900 border-4 border-slate-700 shadow-[0_0_30px_rgba(139,92,246,0.5)]">
+                                    <span className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-br from-cyan-400 to-rose-500">
+                                        VS
+                                    </span>
+                                    <div className="absolute inset-0 rounded-full animate-pulse bg-gradient-to-tr from-cyan-500/20 to-rose-500/20 blur-xl" />
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         {(!selectedId || selectedId === right.id) && (
                             <motion.div

@@ -113,16 +113,13 @@ function ResultContent() {
 
                     <h1 className="mb-8 text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-fuchsia-400 animate-bounce">Winner!</h1>
 
-                    <div className="relative aspect-video w-full max-w-3xl overflow-hidden rounded-2xl border-4 border-primary/50 shadow-[0_0_50px_rgba(139,92,246,0.3)] mb-8 flex items-center justify-center bg-slate-800 group">
+                    <div className="relative aspect-video w-full max-w-3xl overflow-hidden rounded-2xl border-4 border-primary/50 shadow-[0_0_50px_rgba(139,92,246,0.3)] flex items-center justify-center bg-slate-800 group">
                         <CandidateThumbnail imageUrl={winner.image_url}
                             name={winner.name}
                             className="object-contain transition-transform duration-500 group-hover:scale-110"
                             sizes="(max-width: 768px) 100vw, 50vw" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60" />
-                        <div className="absolute bottom-0 left-0 right-0 p-6 text-center">
-                            <h2 className="text-2xl font-bold text-white mb-2 drop-shadow-lg">{winner.name}</h2>
-                        </div>
                     </div>
+                    <div className="text-2xl font-bold text-white my-4">{winner.name}</div>
 
                     <div className="grid grid-cols-2 gap-8 w-full max-w-2xl mb-10">
                         <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700 backdrop-blur-sm text-center">
@@ -135,7 +132,7 @@ function ResultContent() {
                                     ? ((winner.match_win_count / winner.match_expose_count) * 100).toFixed(1)
                                     : '0.0'}%
                             </div>
-                            <div className="text-sm font-medium text-slate-400 uppercase tracking-wider">Win Rate</div>
+                            <div className="text-sm font-medium text-slate-400 uppercase tracking-wider">1:1 Win Rate</div>
                         </div>
                     </div>
 
@@ -198,7 +195,7 @@ function ResultContent() {
                                     <h4 className={`font-bold text-white mb-2 ${isFirst ? 'text-2xl' : 'text-lg'} line-clamp-1`}>{candidate.name}</h4>
                                     <div className="space-y-2">
                                         <div className="flex justify-between text-sm">
-                                            <span className="text-slate-400">Win Rate</span>
+                                            <span className="text-slate-400">1:1 Win Rate</span>
                                             <span className={`font-bold ${Number(winRate) >= 50 ? 'text-green-400' : 'text-rose-400'}`}>{winRate}%</span>
                                         </div>
                                         <div className="h-2 w-full bg-slate-700 rounded-full overflow-hidden">
@@ -208,7 +205,7 @@ function ResultContent() {
                                             />
                                         </div>
                                         <div className="flex justify-between text-sm pt-1">
-                                            <span className="text-slate-400">Wins</span>
+                                            <span className="text-slate-400">Final Wins</span>
                                             <span className="font-bold text-white">{candidate.win_count}</span>
                                         </div>
                                     </div>

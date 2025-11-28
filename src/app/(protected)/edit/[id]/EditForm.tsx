@@ -30,6 +30,7 @@ export default function EditForm({ worldcup, candidates: initialCandidates }: Ed
         initialCandidates.map(c => ({ id: c.id, name: c.name, url: c.image_url }))
     );
     const [error, setError] = useState('');
+    const [previewImage, setPreviewImage] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Initialize candidates based on selected round
@@ -141,6 +142,28 @@ export default function EditForm({ worldcup, candidates: initialCandidates }: Ed
 
     return (
         <div className="container mx-auto max-w-4xl py-12 px-6">
+            {/* Image Preview Modal */}
+            {previewImage && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+                    onClick={() => setPreviewImage(null)}
+                >
+                    <div className="relative max-h-[90vh] max-w-[90vw]">
+                        <img
+                            src={previewImage}
+                            alt="Preview"
+                            className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg"
+                        />
+                        <button
+                            className="absolute top-4 right-4 rounded-full bg-white p-2 text-black shadow-lg hover:bg-gray-200"
+                            onClick={() => setPreviewImage(null)}
+                        >
+                            x
+                        </button>
+                    </div>
+                </div>
+            )}
+
             <div className="mb-8">
                 <h1 className="text-3xl font-bold tracking-tight">Edit WorldCup</h1>
             </div>
@@ -199,14 +222,54 @@ export default function EditForm({ worldcup, candidates: initialCandidates }: Ed
                         </label>
                     </div>
 
-                    <div className="rounded-md border">
+                    {/* Mobile & Tablet View (Cards) */}
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:hidden">
+                        {candidates.map((candidate, index) => (
+                            <div key={index} className="rounded-lg border bg-card p-4 shadow-sm space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm font-medium text-muted-foreground">#{index + 1}</span>
+                                    <div className="h-12 w-12 shrink-0">
+                                        {candidate.url ? (
+                                            <img
+                                                src={candidate.url}
+                                                alt={candidate.name}
+                                                className="h-full w-full rounded object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                                                onClick={() => setPreviewImage(candidate.url)}
+                                            />
+                                        ) : (
+                                            <div className="flex h-full w-full items-center justify-center rounded bg-muted text-[10px] text-muted-foreground">
+                                                No Img
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <input
+                                        value={candidate.name}
+                                        onChange={(e) => handleCandidateChange(index, 'name', e.target.value)}
+                                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                        placeholder="Candidate Name"
+                                    />
+                                    <input
+                                        value={candidate.url}
+                                        onChange={(e) => handleCandidateChange(index, 'url', e.target.value)}
+                                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                        placeholder="Image URL (https://...)"
+                                    />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* PC View (Table) */}
+                    <div className="hidden rounded-md border lg:block overflow-x-auto">
                         <table className="w-full caption-bottom text-sm">
                             <thead className="[&_tr]:border-b">
                                 <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">#</th>
-                                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-1/2 min-w-[150px]">Candidate Name</th>
-                                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-1/2 min-w-[150px]">Image URL</th>
-                                    <th className="h-12 px-4 text-center align-middle font-medium text-muted-foreground w-[150px]">Preview</th>
+                                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[50px]">#</th>
+                                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground min-w-[150px]">Candidate Name</th>
+                                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground min-w-[200px]">Image URL</th>
+                                    <th className="h-12 px-4 text-center align-middle font-medium text-muted-foreground w-[100px]">Preview</th>
                                 </tr>
                             </thead>
                             <tbody className="[&_tr:last-child]:border-0">
@@ -236,7 +299,8 @@ export default function EditForm({ worldcup, candidates: initialCandidates }: Ed
                                                 <img
                                                     src={candidate.url}
                                                     alt={candidate.name}
-                                                    className="w-16 h-16 object-cover rounded mx-auto"
+                                                    className="w-16 h-16 object-cover rounded mx-auto cursor-pointer hover:opacity-80 transition-opacity"
+                                                    onClick={() => setPreviewImage(candidate.url)}
                                                 />
                                             ) : (
                                                 <div className="w-16 h-16 bg-muted rounded mx-auto flex items-center justify-center text-xs text-muted-foreground">
