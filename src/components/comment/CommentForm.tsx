@@ -3,17 +3,29 @@
 import React, { useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { Database } from '@/lib/supabase/database.types';
+import { Button } from '../ui/button';
 
 interface CommentFormProps {
     worldcupId: string;
     parentId?: string;
     onCommentAdded: () => void;
     onCancel?: () => void;
+    initialContent?: string;
+    initialNickname?: string;
+    commentId?: string;
 }
 
-export default function CommentForm({ worldcupId, parentId, onCommentAdded, onCancel }: CommentFormProps) {
-    const [content, setContent] = useState('');
-    const [nickname, setNickname] = useState('');
+export default function CommentForm({
+    worldcupId,
+    parentId,
+    onCommentAdded,
+    onCancel,
+    initialContent = '',
+    initialNickname = '',
+    commentId
+}: CommentFormProps) {
+    const [content, setContent] = useState(initialContent);
+    const [nickname, setNickname] = useState(initialNickname);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -25,28 +37,43 @@ export default function CommentForm({ worldcupId, parentId, onCommentAdded, onCa
         try {
             const { data: { user } } = await supabase.auth.getUser();
 
-            const payload: Database['public']['Tables']['comments']['Insert'] = {
-                worldcup_id: worldcupId,
-                user_id: user?.id || null,
-                nickname: nickname.trim(),
-                content: content.trim(),
-                parent_id: parentId || null,
-            };
+            if (commentId) {
+                // Update existing comment
+                const { error } = await supabase
+                    .from('comments')
+                    .update({
+                        content: content.trim(),
+                        nickname: nickname.trim(),
+                    })
+                    .eq('id', commentId)
+                    .eq('user_id', user?.id || ''); // Security check
 
-            const { error } = await (supabase
-                .from('comments') as any)
-                .insert(payload);
-
-            if (error) {
-                console.error('Error posting comment:', error);
-                alert('Failed to post comment');
+                if (error) throw error;
             } else {
-                setContent('');
-                if (!user) setNickname(''); // Clear nickname only for guests
-                onCommentAdded();
+                // Create new comment
+                const payload: Database['public']['Tables']['comments']['Insert'] = {
+                    worldcup_id: worldcupId,
+                    user_id: user?.id || null,
+                    nickname: nickname.trim(),
+                    content: content.trim(),
+                    parent_id: parentId || null,
+                };
+
+                const { error } = await supabase
+                    .from('comments')
+                    .insert(payload);
+
+                if (error) throw error;
             }
+
+            if (!commentId) {
+                setContent('');
+                if (!user) setNickname('');
+            }
+            onCommentAdded();
         } catch (err) {
-            console.error('Error:', err);
+            console.error('Error submitting comment:', err);
+            alert('Failed to submit comment');
         } finally {
             setIsSubmitting(false);
         }
@@ -86,22 +113,22 @@ export default function CommentForm({ worldcupId, parentId, onCommentAdded, onCa
             </div>
             <div className="flex justify-end gap-2">
                 {onCancel && (
-                    <button
+                    <Button
                         type="button"
+                        variant="ghost"
                         onClick={onCancel}
-                        className="rounded-md px-4 py-2 text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
                         disabled={isSubmitting}
+                        className="text-slate-400 hover:bg-slate-800 hover:text-white"
                     >
                         Cancel
-                    </button>
+                    </Button>
                 )}
-                <button
+                <Button
                     type="submit"
                     disabled={isSubmitting || !content.trim() || !nickname.trim()}
-                    className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
                 >
-                    {isSubmitting ? 'Posting...' : 'Post'}
-                </button>
+                    {isSubmitting ? (commentId ? 'Updating...' : 'Posting...') : (commentId ? 'Update' : 'Post')}
+                </Button>
             </div>
         </form>
     );

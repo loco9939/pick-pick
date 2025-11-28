@@ -29,7 +29,7 @@ export default function HeroSection({ worldcup }: HeroSectionProps) {
                         <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
                     </span>
                     Real-time hot world cup 🔥
-                </div>
+                </div>4
 
                 <h1 className="mb-4 max-w-2xl text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
                     {worldcup.title}

@@ -5,7 +5,9 @@ import { supabase } from '@/lib/supabase/client';
 import { Database } from '@/lib/supabase/database.types';
 import CommentForm from './CommentForm';
 import Pagination from '../common/Pagination';
-import { InfoIcon } from 'lucide-react';
+import { useUser } from '@/context/UserContext';
+import { Edit, InfoIcon, Pencil, Trash2 } from 'lucide-react';
+import { Button } from '../ui/button';
 
 type Comment = Database['public']['Tables']['comments']['Row'];
 
@@ -14,8 +16,10 @@ interface CommentListProps {
 }
 
 export default function CommentList({ worldcupId }: CommentListProps) {
+    const { user } = useUser();
     const [comments, setComments] = useState<Comment[]>([]);
     const [replyingTo, setReplyingTo] = useState<string | null>(null);
+    const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
     const [visibleReplyCounts, setVisibleReplyCounts] = useState<Record<string, number>>({});
@@ -84,6 +88,24 @@ export default function CommentList({ worldcupId }: CommentListProps) {
         }
     };
 
+    const handleDelete = async (commentId: string) => {
+        if (!confirm('Are you sure you want to delete this comment?')) return;
+
+        try {
+            const { error } = await supabase
+                .from('comments')
+                .delete()
+                .eq('id', commentId)
+                .eq('user_id', user?.id || '');
+
+            if (error) throw error;
+            fetchComments();
+        } catch (error) {
+            console.error('Error deleting comment:', error);
+            alert('Failed to delete comment');
+        }
+    };
+
     const handleShowMoreReplies = (commentId: string) => {
         setVisibleReplyCounts(prev => ({
             ...prev,
@@ -129,24 +151,70 @@ export default function CommentList({ worldcupId }: CommentListProps) {
                         const visibleCount = visibleReplyCounts[comment.id] || INITIAL_REPLIES_VISIBLE;
                         const displayedReplies = replies.slice(0, visibleCount);
                         const hasMoreReplies = replies.length > visibleCount;
+                        const isOwner = user?.id === comment.user_id;
+                        const isEditing = editingCommentId === comment.id;
 
                         return (
                             <div key={comment.id} className="space-y-2">
                                 <div className="rounded-lg border p-4 shadow-sm bg-slate-900/50 border-slate-800">
                                     <div className="flex items-center justify-between">
                                         <span className="font-semibold text-slate-200">{comment.nickname}</span>
-                                        <span className="text-xs text-slate-500">
-                                            {new Date(comment.created_at).toLocaleDateString()}
-                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-xs text-slate-500">
+                                                {new Date(comment.created_at).toLocaleDateString()}
+                                            </span>
+                                            {isOwner && !isEditing && (
+                                                <div className="flex items-center gap-1 ml-2">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={() => setEditingCommentId(comment.id)}
+                                                        className="h-6 w-6 text-slate-500 hover:text-gray-100"
+                                                        title="Edit"
+                                                    >
+                                                        <Pencil className="w-3 h-3" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={() => handleDelete(comment.id)}
+                                                        className="h-6 w-6 text-slate-500 hover:text-red-500 hover:bg-red-500/10"
+                                                        title="Delete"
+                                                    >
+                                                        <Trash2 className="w-3 h-3" />
+                                                    </Button>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                    <p className="mt-2 text-sm text-slate-300">{comment.content}</p>
-                                    <button
-                                        onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
-                                        className="mt-2 text-xs text-primary hover:underline"
-                                    >
-                                        Reply
-                                    </button>
-                                    {replyingTo === comment.id && (
+
+                                    {isEditing ? (
+                                        <div className="mt-2">
+                                            <CommentForm
+                                                worldcupId={worldcupId}
+                                                commentId={comment.id}
+                                                initialContent={comment.content}
+                                                initialNickname={comment.nickname}
+                                                onCommentAdded={() => {
+                                                    setEditingCommentId(null);
+                                                    fetchComments();
+                                                }}
+                                                onCancel={() => setEditingCommentId(null)}
+                                            />
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <p className="mt-2 text-sm text-slate-300">{comment.content}</p>
+                                            <button
+                                                onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
+                                                className="mt-2 text-xs text-primary hover:underline"
+                                            >
+                                                Reply
+                                            </button>
+                                        </>
+                                    )}
+
+                                    {replyingTo === comment.id && !isEditing && (
                                         <div className="mt-2">
                                             <CommentForm
                                                 worldcupId={worldcupId}
@@ -165,17 +233,63 @@ export default function CommentList({ worldcupId }: CommentListProps) {
                                     <div className="ml-8 space-y-2 border-l-2 border-slate-800 pl-4">
                                         {visibleCount > 0 ? (
                                             <>
-                                                {displayedReplies.map((reply) => (
-                                                    <div key={reply.id} className="rounded-lg bg-slate-900/30 p-3 border border-slate-800/50">
-                                                        <div className="flex items-center justify-between">
-                                                            <span className="font-semibold text-sm text-slate-300">{reply.nickname}</span>
-                                                            <span className="text-xs text-slate-500">
-                                                                {new Date(reply.created_at).toLocaleDateString()}
-                                                            </span>
+                                                {displayedReplies.map((reply) => {
+                                                    const isReplyOwner = user?.id === reply.user_id;
+                                                    const isReplyEditing = editingCommentId === reply.id;
+
+                                                    return (
+                                                        <div key={reply.id} className="rounded-lg bg-slate-900/30 p-3 border border-slate-800/50">
+                                                            <div className="flex items-center justify-between">
+                                                                <span className="font-semibold text-sm text-slate-300">{reply.nickname}</span>
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="text-xs text-slate-500">
+                                                                        {new Date(reply.created_at).toLocaleDateString()}
+                                                                    </span>
+                                                                    {isReplyOwner && !isReplyEditing && (
+                                                                        <div className="flex items-center gap-1 ml-2">
+                                                                            <Button
+                                                                                variant="ghost"
+                                                                                size="icon"
+                                                                                onClick={() => setEditingCommentId(reply.id)}
+                                                                                className="h-6 w-6 text-slate-500 hover:text-primary"
+                                                                                title="Edit"
+                                                                            >
+                                                                                <Pencil className="w-3 h-3" />
+                                                                            </Button>
+                                                                            <Button
+                                                                                variant="ghost"
+                                                                                size="icon"
+                                                                                onClick={() => handleDelete(reply.id)}
+                                                                                className="h-6 w-6 text-slate-500 hover:text-red-500 hover:bg-red-500/10"
+                                                                                title="Delete"
+                                                                            >
+                                                                                <Trash2 className="w-3 h-3" />
+                                                                            </Button>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+
+                                                            {isReplyEditing ? (
+                                                                <div className="mt-2">
+                                                                    <CommentForm
+                                                                        worldcupId={worldcupId}
+                                                                        commentId={reply.id}
+                                                                        initialContent={reply.content}
+                                                                        initialNickname={reply.nickname}
+                                                                        onCommentAdded={() => {
+                                                                            setEditingCommentId(null);
+                                                                            fetchComments();
+                                                                        }}
+                                                                        onCancel={() => setEditingCommentId(null)}
+                                                                    />
+                                                                </div>
+                                                            ) : (
+                                                                <p className="mt-1 text-sm text-slate-400">{reply.content}</p>
+                                                            )}
                                                         </div>
-                                                        <p className="mt-1 text-sm text-slate-400">{reply.content}</p>
-                                                    </div>
-                                                ))}
+                                                    );
+                                                })}
                                                 <div className="flex items-center gap-4">
                                                     {hasMoreReplies && (
                                                         <button
