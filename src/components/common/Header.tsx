@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { supabase } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/context/UserContext';
@@ -11,6 +12,7 @@ const Header: React.FC = () => {
     const { user, isLoading } = useUser();
 
     const handleLogout = async () => {
+        if (!window.confirm('Are you sure you want to log out?')) return;
         await supabase.auth.signOut();
         router.replace('/');
     };
@@ -20,7 +22,14 @@ const Header: React.FC = () => {
             <div className="flex h-14 items-center px-4">
                 <div className="mr-4 flex">
                     <Link href="/" className="mr-6 flex items-center space-x-2">
-                        <span className="font-bold sm:inline-block">PickPick</span>
+                        <Image
+                            src="/pick-pick(192x58).png"
+                            alt="PickPick Logo"
+                            width={120}
+                            height={36}
+                            priority
+                            className="h-9 w-auto"
+                        />
                     </Link>
                 </div>
                 <div className="flex flex-1 items-center justify-between space-x-2 justify-end">
@@ -31,29 +40,29 @@ const Header: React.FC = () => {
                             <>
                                 <Link
                                     href="/create"
-                                    className="text-sm font-medium transition-colors hover:text-primary"
+                                    className="text-sm font-medium text-slate-300 transition-all duration-300 hover:text-fuchsia-400 hover:drop-shadow-[0_0_8px_rgba(232,121,249,0.5)] hover:scale-105"
                                 >
-                                    Create
+                                    Create Worldcup
                                 </Link>
                                 <Link
                                     href="/my"
-                                    className="text-sm font-medium transition-colors hover:text-primary"
+                                    className="text-sm font-medium text-slate-300 transition-all duration-300 hover:text-fuchsia-400 hover:drop-shadow-[0_0_8px_rgba(232,121,249,0.5)] hover:scale-105"
                                 >
                                     My Page
                                 </Link>
                                 <button
                                     onClick={handleLogout}
-                                    className="text-sm font-medium transition-colors hover:text-primary"
+                                    className="text-sm font-medium text-slate-300 transition-all duration-300 hover:text-fuchsia-400 hover:drop-shadow-[0_0_8px_rgba(232,121,249,0.5)] hover:scale-105"
                                 >
-                                    Logout
+                                    Log Out
                                 </button>
                             </>
                         ) : (
                             <Link
                                 href="/auth/login"
-                                className="text-sm font-medium transition-colors hover:text-primary"
+                                className="text-sm font-medium text-slate-300 transition-all duration-300 hover:text-fuchsia-400 hover:drop-shadow-[0_0_8px_rgba(232,121,249,0.5)] hover:scale-105"
                             >
-                                Login
+                                Sign In
                             </Link>
                         )}
                     </nav>

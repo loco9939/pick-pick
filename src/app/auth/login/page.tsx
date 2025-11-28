@@ -7,9 +7,11 @@ import { supabase } from '@/lib/supabase/client';
 export default function LoginPage() {
     const router = useRouter();
     const [email, setEmail] = useState('');
+
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isSignUp, setIsSignUp] = useState(false);
+    const [confirmPassword, setConfirmPassword] = useState('');
 
     const handleEmailAuth = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -17,6 +19,10 @@ export default function LoginPage() {
 
         try {
             if (isSignUp) {
+                if (password !== confirmPassword) {
+                    throw new Error('Passwords do not match');
+                }
+
                 const { data, error } = await supabase.auth.signUp({
                     email,
                     password,
@@ -78,8 +84,8 @@ export default function LoginPage() {
                 <div className="grid gap-6">
                     <form onSubmit={handleEmailAuth}>
                         <div className="grid gap-2">
-                            <div className="grid gap-1">
-                                <label className="sr-only" htmlFor="email">
+                            <div className="grid gap-2">
+                                <label htmlFor="email">
                                     Email
                                 </label>
                                 <input
@@ -95,7 +101,7 @@ export default function LoginPage() {
                                     className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                                     required
                                 />
-                                <label className="sr-only" htmlFor="password">
+                                <label htmlFor="password">
                                     Password
                                 </label>
                                 <input
@@ -110,6 +116,25 @@ export default function LoginPage() {
                                     className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                                     required
                                 />
+                                {isSignUp && (
+                                    <>
+                                        <label htmlFor="confirmPassword">
+                                            Confirm Password
+                                        </label>
+                                        <input
+                                            id="confirmPassword"
+                                            placeholder="Confirm Password"
+                                            type="password"
+                                            autoCapitalize="none"
+                                            autoComplete="new-password"
+                                            disabled={isLoading}
+                                            value={confirmPassword}
+                                            onChange={(e) => setConfirmPassword(e.target.value)}
+                                            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                            required
+                                        />
+                                    </>
+                                )}
                             </div>
                             <button
                                 disabled={isLoading}
@@ -136,10 +161,12 @@ export default function LoginPage() {
                         <button
                             onClick={handleGoogleLogin}
                             disabled={isLoading}
-                            className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2"
+                            className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-slate-200 bg-white text-slate-900 shadow-sm hover:bg-slate-50 h-10 px-4 py-2"
                         >
+                            <img src="/google-logo.png" alt="Google" className="mr-2 h-4 w-4" />
                             {isSignUp ? 'Sign Up with Google' : 'Sign In with Google'}
                         </button>
+
                     </div>
                     <div className="text-center text-sm text-muted-foreground">
                         {isSignUp ? 'Already have an account? ' : "Don't have an account? "}

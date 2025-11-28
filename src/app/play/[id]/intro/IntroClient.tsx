@@ -85,7 +85,7 @@ export default function IntroPage() {
 
             <Button
                 size="lg"
-                className="text-xl px-12 py-6 animate-pulse"
+                className="text-xl px-12 py-6 animate-pulse border border-slate-700 bg-slate-800/50 hover:bg-slate-800 hover:text-white scale:100 transition-all hover:scale-105"
                 onClick={() => router.push(`/play/${id}`)}
             >
                 Start Game

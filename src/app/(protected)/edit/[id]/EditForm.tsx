@@ -27,6 +27,7 @@ export default function EditForm({ worldcup, candidates: initialCandidates }: Ed
     const router = useRouter();
     const [title, setTitle] = useState(worldcup.title);
     const [description, setDescription] = useState(worldcup.description || '');
+    const [category, setCategory] = useState(worldcup.category || 'all');
     // Determine initial round size based on existing candidates (round up to nearest power of 2)
     const initialRound = [4, 8, 16, 32, 64].find(r => r >= initialCandidates.length) || 64;
     const [selectedRound, setSelectedRound] = useState<number>(initialRound);
@@ -85,6 +86,7 @@ export default function EditForm({ worldcup, candidates: initialCandidates }: Ed
                     description,
                     thumbnail_url: validCandidates[0]?.url || '', // Update thumbnail to first candidate, or empty string
                     candidate_count: selectedRound,
+                    category,
                 })
                 .eq('id', worldcup.id);
 
@@ -169,6 +171,8 @@ export default function EditForm({ worldcup, candidates: initialCandidates }: Ed
                     onTitleChange={setTitle}
                     description={description}
                     onDescriptionChange={setDescription}
+                    category={category}
+                    onCategoryChange={setCategory}
                     selectedRound={selectedRound}
                     onRoundChange={setSelectedRound}
                 />

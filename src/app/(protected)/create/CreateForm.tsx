@@ -19,6 +19,7 @@ export default function CreateForm() {
     const { user, isLoading: isUserLoading } = useUser();
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
+    const [category, setCategory] = useState('all');
     const [selectedRound, setSelectedRound] = useState<number>(4);
     const [candidates, setCandidates] = useState<Candidate[]>([]);
     const [error, setError] = useState('');
@@ -87,6 +88,7 @@ export default function CreateForm() {
                     owner_id: user.id,
                     thumbnail_url: validCandidates[0]?.url || '', // Use first candidate as thumbnail, or empty string
                     candidate_count: selectedRound,
+                    category,
                 })
                 .select()
                 .single();
@@ -142,6 +144,8 @@ export default function CreateForm() {
                     onTitleChange={setTitle}
                     description={description}
                     onDescriptionChange={setDescription}
+                    category={category}
+                    onCategoryChange={setCategory}
                     selectedRound={selectedRound}
                     onRoundChange={setSelectedRound}
                 />

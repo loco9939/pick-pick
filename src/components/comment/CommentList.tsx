@@ -99,7 +99,6 @@ export default function CommentList({ worldcupId }: CommentListProps) {
     return (
         <div className="space-y-8">
             <div className="space-y-4">
-                <h3 className="text-xl font-bold">Comments</h3>
                 <CommentForm
                     worldcupId={worldcupId}
                     onCommentAdded={() => {

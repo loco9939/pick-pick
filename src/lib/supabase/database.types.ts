@@ -44,6 +44,7 @@ export type Database = {
           created_at: string
           total_plays: number
           candidate_count: number
+          category: string
         }
         Insert: {
           id?: string
@@ -55,6 +56,7 @@ export type Database = {
           created_at?: string
           total_plays?: number
           candidate_count?: number
+          category?: string
         }
         Update: {
           id?: string
@@ -66,6 +68,7 @@ export type Database = {
           created_at?: string
           total_plays?: number
           candidate_count?: number
+          category?: string
         }
         Relationships: [
         ]
@@ -133,7 +136,41 @@ export type Database = {
         ]
       }
     }
-  }
+    worldcup_activities: {
+      Row: {
+        id: string
+        worldcup_id: string | null
+        worldcup_title: string
+        candidate_name: string
+        nickname?: string | null
+        created_at: string
+      }
+      Insert: {
+        id?: string
+        worldcup_id?: string | null
+        worldcup_title: string
+        candidate_name: string
+        nickname?: string | null
+        created_at?: string
+      }
+      Update: {
+        id?: string
+        worldcup_id?: string | null
+        worldcup_title?: string
+        candidate_name?: string
+        nickname?: string | null
+        created_at?: string
+      }
+      Relationships: [
+        {
+          foreignKeyName: "worldcup_activities_worldcup_id_fkey"
+          columns: ["worldcup_id"]
+          referencedRelation: "worldcups"
+          referencedColumns: ["id"]
+        }
+      ]
+    }
+  },
   Views: {
   }
   Functions: {

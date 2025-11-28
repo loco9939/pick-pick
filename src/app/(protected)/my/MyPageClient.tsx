@@ -8,6 +8,7 @@ import { Database } from '@/lib/supabase/database.types';
 import { useUser } from '@/context/UserContext';
 import Link from 'next/link';
 import Loading from '@/components/common/Loading';
+import { Edit, Trash2 } from 'lucide-react';
 
 type WorldCup = Database['public']['Tables']['worldcups']['Row'];
 
@@ -146,9 +147,10 @@ export default function MyPageClient() {
                                 <span className="text-lg">{profile?.nickname || 'No nickname set'}</span>
                                 <button
                                     onClick={() => setIsEditingProfile(true)}
-                                    className="text-sm text-primary hover:underline"
+                                    className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-700 bg-slate-800/50 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white"
+                                    title="Edit Profile"
                                 >
-                                    Edit
+                                    <Edit className="h-3.5 w-3.5" />
                                 </button>
                             </div>
                         )}
@@ -181,23 +183,36 @@ export default function MyPageClient() {
                             candidateCount={wc.candidate_count || 0}
                             actions={
                                 <div className="flex justify-between">
-                                    <div>
-                                        <Link href={`/play/${wc.id}/result`} className="text-sm font-medium text-primary hover:underline">
-                                            View Stats
-                                        </Link>
-                                    </div>
-                                    <div className='flex gap-4'>
+                                    <Link
+                                        href={`/play/${wc.id}/result`}
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="inline-flex items-center justify-center gap-1.5 rounded-md border border-slate-700 bg-slate-800/50 px-3 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                                        Rank
+                                    </Link>
+                                    <div className='flex gap-2'>
                                         <button
-                                            onClick={() => router.push(`/edit/${wc.id}`)}
-                                            className="text-sm font-medium text-primary hover:underline"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                router.push(`/edit/${wc.id}`);
+                                            }}
+                                            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-slate-700 bg-slate-800/50 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white"
+                                            title="Edit"
                                         >
-                                            Edit
+                                            <Edit className="h-4 w-4" />
                                         </button>
                                         <button
-                                            onClick={() => handleDelete(wc.id)}
-                                            className="text-sm font-medium text-destructive hover:underline"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                handleDelete(wc.id);
+                                            }}
+                                            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-slate-700 bg-slate-800/50 text-slate-400 transition-colors hover:border-red-900/50 hover:bg-red-900/20 hover:text-red-400"
+                                            title="Delete"
                                         >
-                                            Delete
+                                            <Trash2 className="h-4 w-4" />
                                         </button>
                                     </div>
                                 </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState, useRef } from 'react';
 import { useSearchParams, useRouter, useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import CommentList from '@/components/comment/CommentList';
@@ -37,10 +37,18 @@ function ResultContent() {
 
     const [ranking, setRanking] = useState<Candidate[]>([]);
     const [previewImage, setPreviewImage] = useState<string | null>(null);
+    const hasRecordedActivity = useRef<string | null>(null);
 
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
+
+            // Fetch worldcup info
+            const { data: worldcupData } = await supabase
+                .from('worldcups')
+                .select('title')
+                .eq('id', id)
+                .single();
 
             // Fetch winner if exists
             if (winnerId) {
@@ -54,6 +62,33 @@ function ResultContent() {
                     console.error('Error fetching winner:', winnerError);
                 } else {
                     setWinner(winnerData);
+
+                    // Record activity only if not already recorded for this winnerId
+                    if (worldcupData && hasRecordedActivity.current !== winnerId) {
+                        hasRecordedActivity.current = winnerId;
+
+                        // Get current user and nickname
+                        const { data: { user } } = await supabase.auth.getUser();
+                        let nickname = '익명의 사용자';
+
+                        if (user) {
+                            const { data: profile } = await supabase
+                                .from('profiles')
+                                .select('nickname')
+                                .eq('id', user.id)
+                                .single();
+                            if (profile?.nickname) {
+                                nickname = profile.nickname;
+                            }
+                        }
+
+                        await supabase.from('worldcup_activities').insert({
+                            worldcup_id: id,
+                            worldcup_title: worldcupData.title,
+                            candidate_name: winnerData.name,
+                            nickname: nickname,
+                        });
+                    }
                 }
             }
 
