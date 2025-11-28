@@ -65,9 +65,11 @@ const GameCard: React.FC<GameCardProps> = ({ candidate, onClick, isSelected, isU
                     sizes="(max-width: 768px) 100vw, 50vw"
                 />
                 <div className={`absolute inset-0 bg-gradient-to-t ${gradientClass} to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100`} />
-            </div>
-            <div className="relative z-10 flex pt-2 w-full items-center justify-center bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-border/50">
-                <h3 className="text-lg font-bold tracking-tight group-hover:text-white transition-colors">{candidate.name}</h3>
+
+                {/* Title Overlay */}
+                <div className="absolute bottom-2 left-0 right-0 z-20 bg-black w-full py-4 px-4 text-center">
+                    <h3 className="text-2xl font-bold tracking-tight text-white drop-shadow-md">{candidate.name}</h3>
+                </div>
             </div>
         </motion.button>
     );
