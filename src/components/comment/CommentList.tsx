@@ -88,17 +88,40 @@ export default function CommentList({ worldcupId }: CommentListProps) {
         }
     };
 
-    const handleDelete = async (commentId: string) => {
+    const handleDelete = async (commentId: string, commentUserId: string | null) => {
         if (!confirm('Are you sure you want to delete this comment?')) return;
 
         try {
-            const { error } = await supabase
-                .from('comments')
-                .delete()
-                .eq('id', commentId)
-                .eq('user_id', user?.id || '');
+            if (user && user.id === commentUserId) {
+                // Logged in user deleting their own comment
+                const { error } = await supabase
+                    .from('comments')
+                    .delete()
+                    .eq('id', commentId)
+                    .eq('user_id', user.id);
 
-            if (error) throw error;
+                if (error) throw error;
+            } else if (!commentUserId) {
+                // Anonymous comment deletion
+                const password = prompt('Enter password to delete:');
+                if (!password) return;
+
+                const { data, error } = await supabase
+                    .rpc('delete_anonymous_comment', {
+                        p_comment_id: commentId,
+                        p_password: password
+                    });
+
+                if (error) throw error;
+                if (!data) {
+                    alert('Incorrect password');
+                    return;
+                }
+            } else {
+                alert('You cannot delete this comment.');
+                return;
+            }
+
             fetchComments();
         } catch (error) {
             console.error('Error deleting comment:', error);
@@ -163,7 +186,7 @@ export default function CommentList({ worldcupId }: CommentListProps) {
                                             <span className="text-xs text-slate-500">
                                                 {new Date(comment.created_at).toLocaleDateString()}
                                             </span>
-                                            {isOwner && !isEditing && (
+                                            {(isOwner || !comment.user_id) && !isEditing && (
                                                 <div className="flex items-center gap-1 ml-2">
                                                     <Button
                                                         variant="ghost"
@@ -177,7 +200,7 @@ export default function CommentList({ worldcupId }: CommentListProps) {
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
-                                                        onClick={() => handleDelete(comment.id)}
+                                                        onClick={() => handleDelete(comment.id, comment.user_id)}
                                                         className="h-6 w-6 text-slate-500 hover:text-red-500 hover:bg-red-500/10"
                                                         title="Delete"
                                                     >
@@ -245,7 +268,7 @@ export default function CommentList({ worldcupId }: CommentListProps) {
                                                                     <span className="text-xs text-slate-500">
                                                                         {new Date(reply.created_at).toLocaleDateString()}
                                                                     </span>
-                                                                    {isReplyOwner && !isReplyEditing && (
+                                                                    {(isReplyOwner || !reply.user_id) && !isReplyEditing && (
                                                                         <div className="flex items-center gap-1 ml-2">
                                                                             <Button
                                                                                 variant="ghost"
@@ -259,7 +282,7 @@ export default function CommentList({ worldcupId }: CommentListProps) {
                                                                             <Button
                                                                                 variant="ghost"
                                                                                 size="icon"
-                                                                                onClick={() => handleDelete(reply.id)}
+                                                                                onClick={() => handleDelete(reply.id, reply.user_id)}
                                                                                 className="h-6 w-6 text-slate-500 hover:text-red-500 hover:bg-red-500/10"
                                                                                 title="Delete"
                                                                             >

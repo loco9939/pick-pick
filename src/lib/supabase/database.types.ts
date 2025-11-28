@@ -111,6 +111,7 @@ export type Database = {
           user_id: string | null
           nickname: string
           content: string
+          password?: string | null
           parent_id: string | null
           created_at: string
         }
@@ -120,6 +121,7 @@ export type Database = {
           user_id?: string | null
           nickname: string
           content: string
+          password?: string | null
           parent_id?: string | null
           created_at?: string
         }
@@ -129,6 +131,7 @@ export type Database = {
           user_id?: string | null
           nickname?: string
           content?: string
+          password?: string | null
           parent_id?: string | null
           created_at?: string
         }
@@ -198,6 +201,22 @@ export type Database = {
         worldcup_id: string
       }
       Returns: void
+    }
+    update_anonymous_comment: {
+      Args: {
+        p_comment_id: string
+        p_password: string
+        p_content: string
+        p_nickname: string
+      }
+      Returns: boolean
+    }
+    delete_anonymous_comment: {
+      Args: {
+        p_comment_id: string
+        p_password: string
+      }
+      Returns: boolean
     }
   }
   Enums: {}
