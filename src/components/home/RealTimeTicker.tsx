@@ -58,14 +58,6 @@ export default function RealTimeTicker() {
                         </span>
                     ))}
                 </div>
-                <div className="absolute top-0 animate-marquee2 whitespace-nowrap py-1">
-                    {activities.map((activity, index) => (
-                        <span key={`clone-${index}`} className="mx-4 text-sm text-slate-400">
-                            <span className="mr-2 inline-block h-1.5 w-1.5 rounded-full bg-green-500"></span>
-                            {activity}
-                        </span>
-                    ))}
-                </div>
             </div>
         </div>
     );

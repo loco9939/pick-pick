@@ -34,16 +34,16 @@ const Header: React.FC = () => {
                 </div>
                 <div className="flex flex-1 items-center justify-between space-x-2 justify-end">
                     <nav className="flex items-center space-x-4">
+                        <Link
+                            href="/create"
+                            className="text-sm font-medium text-slate-300 transition-all duration-300 hover:text-fuchsia-400 hover:drop-shadow-[0_0_8px_rgba(232,121,249,0.5)] hover:scale-105"
+                        >
+                            Create Worldcup
+                        </Link>
                         {isLoading ? (
                             <div className="h-5 w-20 animate-pulse rounded bg-muted" />
                         ) : user ? (
                             <>
-                                <Link
-                                    href="/create"
-                                    className="text-sm font-medium text-slate-300 transition-all duration-300 hover:text-fuchsia-400 hover:drop-shadow-[0_0_8px_rgba(232,121,249,0.5)] hover:scale-105"
-                                >
-                                    Create Worldcup
-                                </Link>
                                 <Link
                                     href="/my"
                                     className="text-sm font-medium text-slate-300 transition-all duration-300 hover:text-fuchsia-400 hover:drop-shadow-[0_0_8px_rgba(232,121,249,0.5)] hover:scale-105"

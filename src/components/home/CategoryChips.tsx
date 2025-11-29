@@ -6,7 +6,11 @@ import { CATEGORIES } from '@/constants/categories';
 
 
 
-export default function CategoryChips() {
+interface CategoryChipsProps {
+    baseUrl?: string;
+}
+
+export default function CategoryChips({ baseUrl = '/' }: CategoryChipsProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
     const selected = searchParams.get('category') || 'all';
@@ -18,7 +22,9 @@ export default function CategoryChips() {
         } else {
             params.set('category', id);
         }
-        router.push(`/?${params.toString()}`);
+        // Reset page when category changes
+        params.delete('page');
+        router.push(`${baseUrl}?${params.toString()}`, { scroll: false });
     };
 
     return (

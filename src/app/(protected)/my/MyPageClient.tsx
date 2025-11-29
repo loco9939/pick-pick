@@ -3,19 +3,15 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
-import WorldCupCard from '@/components/worldcup/WorldCupCard';
 import { Database } from '@/lib/supabase/database.types';
 import { useUser } from '@/context/UserContext';
-import Link from 'next/link';
 import Loading from '@/components/common/Loading';
-import { Edit, Trash2 } from 'lucide-react';
-
-type WorldCup = Database['public']['Tables']['worldcups']['Row'];
+import { Edit } from 'lucide-react';
+import WorldCupList from '@/components/worldcup/WorldCupList';
 
 export default function MyPageClient() {
     const router = useRouter();
     const { user, isLoading: isUserLoading } = useUser();
-    const [worldcups, setWorldcups] = useState<WorldCup[]>([]);
     const [profile, setProfile] = useState<Database['public']['Tables']['profiles']['Row'] | null>(null);
     const [isDataLoading, setIsDataLoading] = useState(true);
     const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -31,16 +27,7 @@ export default function MyPageClient() {
         const fetchData = async () => {
             if (!user) return;
 
-            // Fetch WorldCups
-            const { data: wcData, error: wcError } = await supabase
-                .from('worldcups')
-                .select('*')
-                .eq('owner_id', user.id)
-                .eq('is_deleted', false)
-                .order('created_at', { ascending: false });
-
-            if (wcError) console.error('Error fetching worldcups:', wcError);
-            else setWorldcups(wcData || []);
+            setIsDataLoading(true);
 
             // Fetch Profile
             const { data: profileData, error: profileError } = await supabase
@@ -63,23 +50,6 @@ export default function MyPageClient() {
         }
     }, [user, isUserLoading, router]);
 
-    const handleDelete = async (id: string) => {
-        if (!confirm('Are you sure you want to delete this WorldCup?')) return;
-
-        // 1. Soft delete WorldCup
-        const { error: wcError } = await supabase
-            .from('worldcups')
-            .update({ is_deleted: true })
-            .eq('id', id);
-
-        if (wcError) {
-            console.error('Error deleting worldcup:', wcError);
-            alert('Failed to delete WorldCup');
-        } else {
-            setWorldcups((prev) => prev.filter((wc) => wc.id !== id));
-        }
-    };
-
     const handleUpdateProfile = async () => {
         if (!user || !newNickname.trim()) return;
 
@@ -99,12 +69,10 @@ export default function MyPageClient() {
         setIsSavingProfile(false);
     };
 
-    if (isUserLoading || isDataLoading) {
+    if (isUserLoading || (isDataLoading && !profile)) {
         return <Loading fullScreen={false} />;
     }
 
-
-    console.log('====worldcups: ', worldcups)
     return (
         <div className="container mx-auto py-8 px-4">
             {/* Profile Section */}
@@ -160,67 +128,7 @@ export default function MyPageClient() {
 
             <h1 className="mb-8 text-3xl font-bold">My WorldCups</h1>
 
-            {worldcups.length === 0 ? (
-                <div className="text-center py-12 border rounded-lg bg-muted/10">
-                    <p className="text-muted-foreground mb-4">You haven't created any WorldCups yet.</p>
-                    <button
-                        onClick={() => router.push('/create')}
-                        className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
-                    >
-                        Create New WorldCup
-                    </button>
-                </div>
-            ) : (
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                    {worldcups.map((wc) => (
-                        <WorldCupCard
-                            key={wc.id}
-                            id={wc.id}
-                            title={wc.title}
-                            description={wc.description || ''}
-                            thumbnailUrl={wc.thumbnail_url || ''}
-                            totalPlays={wc.total_plays}
-                            candidateCount={wc.candidate_count || 0}
-                            actions={
-                                <div className="flex justify-between">
-                                    <Link
-                                        href={`/play/${wc.id}/result`}
-                                        onClick={(e) => e.stopPropagation()}
-                                        className="inline-flex items-center justify-center gap-1.5 rounded-md border border-slate-700 bg-slate-800/50 px-3 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
-                                    >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-                                        Rank
-                                    </Link>
-                                    <div className='flex gap-2'>
-                                        <button
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                router.push(`/edit/${wc.id}`);
-                                            }}
-                                            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-slate-700 bg-slate-800/50 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white"
-                                            title="Edit"
-                                        >
-                                            <Edit className="h-4 w-4" />
-                                        </button>
-                                        <button
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                handleDelete(wc.id);
-                                            }}
-                                            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-slate-700 bg-slate-800/50 text-slate-400 transition-colors hover:border-red-900/50 hover:bg-red-900/20 hover:text-red-400"
-                                            title="Delete"
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </button>
-                                    </div>
-                                </div>
-                            }
-                        />
-                    ))}
-                </div>
-            )}
+            {user && <WorldCupList mode="my" userId={user.id} baseUrl="/my" />}
         </div>
     );
 }
