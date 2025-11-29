@@ -37,17 +37,18 @@ const WorldCupCard: React.FC<WorldCupCardProps> = ({ id, title, description, thu
                         </div>
                     )}
                 </div>
-                <div className="p-4">
+                <div className="p-4 pb-0">
                     <div className="flex items-start justify-between mb-2 gap-2">
                         <h3 className="text-lg font-extrabold leading-tight text-white group-hover:text-primary line-clamp-2 min-h-[3rem] transition-colors">{title}</h3>
                         <span className="text-sm text-slate-400 whitespace-nowrap">{candidateCount} 강</span>
                     </div>
                     <p className="text-sm text-slate-400 line-clamp-2 min-h-[2.5rem] mb-4">{description}</p>
-
-                    {/* Action Buttons */}
-                    {actions}
                 </div>
             </Link>
+            <div className="px-4 pb-4">
+                {/* Action Buttons */}
+                {actions}
+            </div>
         </div>
     );
 };

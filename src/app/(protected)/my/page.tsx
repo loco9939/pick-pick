@@ -1,6 +1,8 @@
+import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import MyPageClient from './MyPageClient';
+import Loading from '@/components/common/Loading';
 
 export default async function MyPage() {
     const supabase = await createClient();
@@ -13,5 +15,9 @@ export default async function MyPage() {
         redirect('/auth/login');
     }
 
-    return <MyPageClient />;
+    return (
+        <Suspense fallback={<Loading fullScreen={false} />}>
+            <MyPageClient />
+        </Suspense>
+    );
 }

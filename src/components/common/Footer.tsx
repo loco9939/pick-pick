@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 
 export default function Footer() {
     const pathname = usePathname();
@@ -21,9 +22,9 @@ export default function Footer() {
                     © 2025 PickPick. All rights reserved.
                 </p>
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <a href="mailto:hifiju5047@gmail.com" className="hover:text-primary transition-colors">
+                    <Link href="mailto:hifiju5047@gmail.com" className="hover:text-primary transition-colors">
                         Contact: hifiju5047@gmail.com
-                    </a>
+                    </Link>
                 </div>
             </div>
         </footer>

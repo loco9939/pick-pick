@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { PlusCircle } from 'lucide-react';
-import { Button } from '../ui/button';
+
 
 export default function CreateBanner() {
     return (
@@ -15,11 +15,12 @@ export default function CreateBanner() {
                     <br className="hidden sm:inline" />
                     Anyone can create and play.
                 </p>
-                <Link href="/create">
-                    <Button size="lg" className="gap-2 bg-fuchsia-600 hover:bg-fuchsia-500 text-white border-none shadow-[0_0_20px_rgba(192,38,211,0.3)] hover:shadow-[0_0_30px_rgba(192,38,211,0.5)] transition-all duration-300">
-                        <PlusCircle className="h-5 w-5" />
-                        Create WorldCup
-                    </Button>
+                <Link
+                    href="/create"
+                    className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-11 px-8 gap-2 bg-fuchsia-600 hover:bg-fuchsia-500 text-white border-none shadow-[0_0_20px_rgba(192,38,211,0.3)] hover:shadow-[0_0_30px_rgba(192,38,211,0.5)] duration-300"
+                >
+                    <PlusCircle className="h-5 w-5" />
+                    Create WorldCup
                 </Link>
             </div>
         </div>
