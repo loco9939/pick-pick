@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
-import "./globals.css";
+import "../globals.css";
 import Header from "@/components/common/Header";
 import Footer from "@/components/common/Footer";
 import { UserProvider } from "@/context/UserContext";
+import { GlobalAlertProvider } from "@/components/common/GlobalAlertProvider";
 
 import GoogleAnalytics from "@/components/common/GoogleAnalytics";
+import { NextIntlClientProvider } from 'next-intl';
+import { getMessages } from 'next-intl/server';
 
 export const metadata: Metadata = {
   title: "PickPick - WorldCup Game Platform",
@@ -42,24 +45,32 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
+  params: { locale }
 }: Readonly<{
   children: React.ReactNode;
+  params: { locale: string };
 }>) {
+  const messages = await getMessages();
+
   return (
-    <html lang="en" className="dark">
+    <html lang={locale} className="dark">
       <body
         className={`antialiased min-h-screen flex flex-col`}
       >
         <GoogleAnalytics />
-        <UserProvider>
-          <Header />
-          <main className="flex-1 flex flex-col items-center justify-center">
-            {children}
-          </main>
-          <Footer />
-        </UserProvider>
+        <NextIntlClientProvider messages={messages}>
+          <UserProvider>
+            <GlobalAlertProvider>
+              <Header />
+              <main className="flex-1 flex flex-col items-center justify-center">
+                {children}
+              </main>
+              <Footer />
+            </GlobalAlertProvider>
+          </UserProvider>
+        </NextIntlClientProvider>
 
       </body>
     </html>

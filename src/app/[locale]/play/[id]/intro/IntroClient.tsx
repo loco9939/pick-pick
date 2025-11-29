@@ -1,12 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter } from '@/navigation';
+import { useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import WorldCupThumbnail from '@/components/worldcup/WorldCupThumbnail';
 import Loading from '@/components/common/Loading';
+import { useTranslations } from 'next-intl';
 
 interface WorldCup {
     id: string;
@@ -18,14 +20,13 @@ interface WorldCup {
     } | null;
 }
 
-
-
 export default function IntroPage() {
     const params = useParams();
     const id = params.id as string;
     const [worldcup, setWorldcup] = useState<WorldCup | null>(null);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
+    const t = useTranslations();
 
     useEffect(() => {
         const fetchWorldCup = async () => {
@@ -57,7 +58,7 @@ export default function IntroPage() {
     }
 
     if (!worldcup) {
-        return <div className="flex h-screen items-center justify-center">WorldCup not found</div>;
+        return <div className="flex h-screen items-center justify-center">{t('월드컵을 찾을 수 없습니다')}</div>;
     }
 
 
@@ -80,15 +81,15 @@ export default function IntroPage() {
             )}
 
             <div className="mb-8 text-sm text-muted-foreground">
-                Created by {worldcup.profiles?.nickname || 'Unknown'}
+                {t('제작자')}: {worldcup.profiles?.nickname || t('알 수 없음')}
             </div>
 
             <Button
                 size="lg"
-                className="text-xl px-12 py-6 animate-pulse border border-slate-700 bg-slate-800/50 hover:bg-slate-800 hover:text-white scale:100 transition-all hover:scale-105"
+                className="w-full text-lg py-6 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25 animate-pulse"
                 onClick={() => router.push(`/play/${id}`)}
             >
-                Start Game
+                {t('게임 시작')}
             </Button>
         </div>
     );

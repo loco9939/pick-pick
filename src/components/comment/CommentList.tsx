@@ -8,6 +8,7 @@ import Pagination from '../common/Pagination';
 import { useUser } from '@/context/UserContext';
 import { Edit, InfoIcon, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '../ui/button';
+import { useTranslations } from 'next-intl';
 
 type Comment = Database['public']['Tables']['comments']['Row'];
 
@@ -15,14 +16,24 @@ interface CommentListProps {
     worldcupId: string;
 }
 
+import { useGlobalAlert } from '@/components/common/GlobalAlertProvider';
+import PasswordPromptDialog from './PasswordPromptDialog';
+
 export default function CommentList({ worldcupId }: CommentListProps) {
     const { user } = useUser();
+    const t = useTranslations();
+    const { showAlert, showConfirm } = useGlobalAlert();
     const [comments, setComments] = useState<Comment[]>([]);
     const [replyingTo, setReplyingTo] = useState<string | null>(null);
     const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
     const [visibleReplyCounts, setVisibleReplyCounts] = useState<Record<string, number>>({});
+
+    // For password prompt
+    const [isPasswordPromptOpen, setIsPasswordPromptOpen] = useState(false);
+    const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+
     const ITEMS_PER_PAGE = 10;
     const INITIAL_REPLIES_VISIBLE = 0;
     const REPLIES_INCREMENT = 5;
@@ -88,12 +99,13 @@ export default function CommentList({ worldcupId }: CommentListProps) {
         }
     };
 
-    const handleDelete = async (commentId: string, commentUserId: string | null) => {
-        if (!confirm('Are you sure you want to delete this comment?')) return;
+    const handleDeleteClick = async (commentId: string, commentUserId: string | null) => {
+        if (user && user.id === commentUserId) {
+            // Logged in user deleting their own comment
+            const confirmed = await showConfirm(t('이 댓글을 삭제하시겠습니까?'));
+            if (!confirmed) return;
 
-        try {
-            if (user && user.id === commentUserId) {
-                // Logged in user deleting their own comment
+            try {
                 const { error } = await supabase
                     .from('comments')
                     .delete()
@@ -101,31 +113,42 @@ export default function CommentList({ worldcupId }: CommentListProps) {
                     .eq('user_id', user.id);
 
                 if (error) throw error;
-            } else if (!commentUserId) {
-                // Anonymous comment deletion
-                const password = prompt('Enter password to delete:');
-                if (!password) return;
+                fetchComments();
+            } catch (error) {
+                console.error('Error deleting comment:', error);
+                await showAlert(t('댓글 삭제 실패'));
+            }
+        } else if (!commentUserId) {
+            // Anonymous comment deletion - open password prompt
+            setDeleteTargetId(commentId);
+            setIsPasswordPromptOpen(true);
+        } else {
+            await showAlert(t('이 댓글을 삭제할 수 없습니다'));
+        }
+    };
 
-                const { data, error } = await supabase
-                    .rpc('delete_anonymous_comment', {
-                        p_comment_id: commentId,
-                        p_password: password
-                    });
+    const handlePasswordSubmit = async (password: string) => {
+        if (!deleteTargetId) return;
 
-                if (error) throw error;
-                if (!data) {
-                    alert('Incorrect password');
-                    return;
-                }
-            } else {
-                alert('You cannot delete this comment.');
+        try {
+            const { data, error } = await supabase
+                .rpc('delete_anonymous_comment', {
+                    p_comment_id: deleteTargetId,
+                    p_password: password
+                });
+
+            if (error) throw error;
+            if (!data) {
+                await showAlert(t('비밀번호가 일치하지 않습니다'));
                 return;
             }
 
             fetchComments();
         } catch (error) {
             console.error('Error deleting comment:', error);
-            alert('Failed to delete comment');
+            await showAlert(t('댓글 삭제 실패'));
+        } finally {
+            setDeleteTargetId(null);
         }
     };
 
@@ -151,7 +174,7 @@ export default function CommentList({ worldcupId }: CommentListProps) {
             <div className="space-y-4">
                 <div className="rounded-md bg-yellow-500/10 p-4 text-sm text-yellow-500 border border-yellow-500/20 flex items-center gap-3">
                     <InfoIcon className="w-4 h-4" />
-                    <p>Please keep the comments clean and respectful.</p>
+                    <p>{t('깨끗하고 존중하는 댓글 문화를 만들어주세요')}</p>
                 </div>
                 <CommentForm
                     worldcupId={worldcupId}
@@ -165,8 +188,8 @@ export default function CommentList({ worldcupId }: CommentListProps) {
             <div className="space-y-6" data-testid="comment-list">
                 {rootComments.length === 0 ? (
                     <div className="text-center py-12">
-                        <p className="text-slate-500">No comments yet.</p>
-                        <p className="text-sm text-slate-600 mt-1">Be the first to share your thoughts!</p>
+                        <p className="text-slate-500">{t('아직 댓글이 없습니다')}</p>
+                        <p className="text-sm text-slate-600 mt-1">{t('가장 먼저 의견을 남겨보세요!')}</p>
                     </div>
                 ) : (
                     rootComments.map((comment) => {
@@ -193,16 +216,16 @@ export default function CommentList({ worldcupId }: CommentListProps) {
                                                         size="icon"
                                                         onClick={() => setEditingCommentId(comment.id)}
                                                         className="h-6 w-6 text-slate-500 hover:text-gray-100"
-                                                        title="Edit"
+                                                        title={t('수정')}
                                                     >
                                                         <Pencil className="w-3 h-3" />
                                                     </Button>
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
-                                                        onClick={() => handleDelete(comment.id, comment.user_id)}
+                                                        onClick={() => handleDeleteClick(comment.id, comment.user_id)}
                                                         className="h-6 w-6 text-slate-500 hover:text-red-500 hover:bg-red-500/10"
-                                                        title="Delete"
+                                                        title={t('삭제')}
                                                     >
                                                         <Trash2 className="w-3 h-3" />
                                                     </Button>
@@ -216,6 +239,7 @@ export default function CommentList({ worldcupId }: CommentListProps) {
                                             <CommentForm
                                                 worldcupId={worldcupId}
                                                 commentId={comment.id}
+                                                commentOwnerId={comment.user_id}
                                                 initialContent={comment.content}
                                                 initialNickname={comment.nickname}
                                                 onCommentAdded={() => {
@@ -232,7 +256,7 @@ export default function CommentList({ worldcupId }: CommentListProps) {
                                                 onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
                                                 className="mt-2 text-xs text-primary hover:underline"
                                             >
-                                                Reply
+                                                {t('답글')}
                                             </button>
                                         </>
                                     )}
@@ -244,7 +268,11 @@ export default function CommentList({ worldcupId }: CommentListProps) {
                                                 parentId={comment.id}
                                                 onCommentAdded={() => {
                                                     fetchComments();
-                                                    // Keep reply form open
+                                                    // Auto-expand replies to show the new one
+                                                    setVisibleReplyCounts(prev => ({
+                                                        ...prev,
+                                                        [comment.id]: (replies.length || 0) + 1
+                                                    }));
                                                 }}
                                                 onCancel={() => setReplyingTo(null)}
                                             />
@@ -275,16 +303,16 @@ export default function CommentList({ worldcupId }: CommentListProps) {
                                                                                 size="icon"
                                                                                 onClick={() => setEditingCommentId(reply.id)}
                                                                                 className="h-6 w-6 text-slate-500 hover:text-primary"
-                                                                                title="Edit"
+                                                                                title={t('수정')}
                                                                             >
                                                                                 <Pencil className="w-3 h-3" />
                                                                             </Button>
                                                                             <Button
                                                                                 variant="ghost"
                                                                                 size="icon"
-                                                                                onClick={() => handleDelete(reply.id, reply.user_id)}
+                                                                                onClick={() => handleDeleteClick(reply.id, reply.user_id)}
                                                                                 className="h-6 w-6 text-slate-500 hover:text-red-500 hover:bg-red-500/10"
-                                                                                title="Delete"
+                                                                                title={t('삭제')}
                                                                             >
                                                                                 <Trash2 className="w-3 h-3" />
                                                                             </Button>
@@ -298,6 +326,7 @@ export default function CommentList({ worldcupId }: CommentListProps) {
                                                                     <CommentForm
                                                                         worldcupId={worldcupId}
                                                                         commentId={reply.id}
+                                                                        commentOwnerId={reply.user_id}
                                                                         initialContent={reply.content}
                                                                         initialNickname={reply.nickname}
                                                                         onCommentAdded={() => {
@@ -319,14 +348,14 @@ export default function CommentList({ worldcupId }: CommentListProps) {
                                                             onClick={() => handleShowMoreReplies(comment.id)}
                                                             className="text-xs text-slate-500 hover:text-primary transition-colors flex items-center gap-1"
                                                         >
-                                                            Show {Math.min(REPLIES_INCREMENT, replies.length - visibleCount)} more replies...
+                                                            {t('답글 더 보기', { count: Math.min(REPLIES_INCREMENT, replies.length - visibleCount) })}
                                                         </button>
                                                     )}
                                                     <button
                                                         onClick={() => handleHideReplies(comment.id)}
                                                         className="text-xs text-slate-500 hover:text-primary transition-colors"
                                                     >
-                                                        Hide replies
+                                                        {t('답글 숨기기')}
                                                     </button>
                                                 </div>
                                             </>
@@ -335,7 +364,7 @@ export default function CommentList({ worldcupId }: CommentListProps) {
                                                 onClick={() => handleShowMoreReplies(comment.id)}
                                                 className="text-xs text-slate-500 hover:text-primary transition-colors flex items-center gap-1"
                                             >
-                                                View {replies.length} replies
+                                                {t('답글 보기', { count: replies.length })}
                                             </button>
                                         )}
                                     </div>
@@ -351,6 +380,12 @@ export default function CommentList({ worldcupId }: CommentListProps) {
                 currentPage={page}
                 totalPages={totalPages}
                 onPageChange={handlePageChange}
+            />
+
+            <PasswordPromptDialog
+                isOpen={isPasswordPromptOpen}
+                onClose={() => setIsPasswordPromptOpen(false)}
+                onSubmit={handlePasswordSubmit}
             />
         </div>
     );

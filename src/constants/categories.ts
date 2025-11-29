@@ -1,6 +1,6 @@
 export const CATEGORIES = [
-    { id: 'all', label: 'All' },
-    { id: 'dev', label: '💻 Development' },
-    { id: 'food', label: '🍔 Food' },
-    { id: 'ent', label: '🎵 Entertainment' },
+    { id: 'all', label: '전체' },
+    { id: 'dev', label: '개발' },
+    { id: 'food', label: '음식' },
+    { id: 'ent', label: '엔터테인먼트' },
 ];

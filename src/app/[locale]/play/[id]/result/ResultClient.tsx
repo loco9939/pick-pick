@@ -1,13 +1,15 @@
 'use client';
 
 import { Suspense, useEffect, useState, useRef } from 'react';
-import { useSearchParams, useRouter, useParams } from 'next/navigation';
+import { useRouter } from '@/navigation';
+import { useSearchParams, useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import CommentList from '@/components/comment/CommentList';
 import { Button } from '@/components/ui/button';
 import CandidateThumbnail from '@/components/game/CandidateThumbnail';
 import Loading from '@/components/common/Loading';
 import ImagePreviewModal from '@/components/common/ImagePreviewModal';
+import { useTranslations } from 'next-intl';
 
 interface Candidate {
     id: string;
@@ -26,6 +28,8 @@ export default function ResultPage() {
     );
 }
 
+import { useGlobalAlert } from '@/components/common/GlobalAlertProvider';
+
 function ResultContent() {
     const params = useParams();
     const id = params.id as string;
@@ -34,6 +38,8 @@ function ResultContent() {
     const [winner, setWinner] = useState<Candidate | null>(null);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
+    const t = useTranslations();
+    const { showAlert } = useGlobalAlert();
 
     const [ranking, setRanking] = useState<Candidate[]>([]);
     const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -130,9 +136,9 @@ function ResultContent() {
         }
     }, [winner]);
 
-    const handleShare = () => {
+    const handleShare = async () => {
         navigator.clipboard.writeText(window.location.href);
-        alert('Link copied to clipboard!');
+        await showAlert(t('링크가 복사되었습니다!'));
     };
 
     if (loading) {
@@ -149,7 +155,7 @@ function ResultContent() {
                         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/20 blur-[100px] rounded-full animate-pulse" />
                     </div>
 
-                    <h1 className="mb-8 text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-fuchsia-400 animate-bounce">Winner!</h1>
+                    <h1 className="mb-8 text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-fuchsia-400 animate-bounce">{t('우승!')}</h1>
 
                     <div className="relative cursor-pointer aspect-video w-full max-w-3xl overflow-hidden rounded-2xl border-4 border-primary/50 shadow-[0_0_50px_rgba(139,92,246,0.3)] flex items-center justify-center bg-slate-800 group" onClick={() => setPreviewImage(winner.image_url)}>
                         <CandidateThumbnail imageUrl={winner.image_url}
@@ -162,7 +168,7 @@ function ResultContent() {
                     <div className="grid grid-cols-2 gap-8 w-full max-w-2xl mb-10">
                         <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700 backdrop-blur-sm text-center">
                             <div className="text-4xl font-black text-white mb-1">{winner.win_count}</div>
-                            <div className="text-sm font-medium text-slate-400 uppercase tracking-wider">Final Wins</div>
+                            <div className="text-sm font-medium text-slate-400 uppercase tracking-wider">{t('최종 우승')}</div>
                         </div>
                         <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700 backdrop-blur-sm text-center">
                             <div className="text-4xl font-black text-primary mb-1">
@@ -170,7 +176,7 @@ function ResultContent() {
                                     ? ((winner.match_win_count / winner.match_expose_count) * 100).toFixed(1)
                                     : '0.0'}%
                             </div>
-                            <div className="text-sm font-medium text-slate-400 uppercase tracking-wider">1:1 Win Rate</div>
+                            <div className="text-sm font-medium text-slate-400 uppercase tracking-wider">{t('1:1 승률')}</div>
                         </div>
                     </div>
 
@@ -180,7 +186,7 @@ function ResultContent() {
                             onClick={() => router.push(`/play/${id}/intro`)}
                             className="px-8 py-6 text-lg bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25"
                         >
-                            Replay Game
+                            {t('다시 하기')}
                         </Button>
                         <Button
                             size="lg"
@@ -188,7 +194,7 @@ function ResultContent() {
                             onClick={handleShare}
                             className="px-8 py-6 text-lg border-slate-600 hover:bg-slate-800"
                         >
-                            Share Result
+                            {t('결과 공유')}
                         </Button>
                         <Button
                             size="lg"
@@ -196,7 +202,7 @@ function ResultContent() {
                             onClick={() => router.push('/')}
                             className="px-8 py-6 text-lg hover:bg-slate-800"
                         >
-                            Back to Home
+                            {t('홈으로')}
                         </Button>
                     </div>
                 </div>
@@ -204,7 +210,7 @@ function ResultContent() {
 
             <div className="mb-16">
                 <h3 className="text-3xl font-bold mb-8 text-white flex items-center gap-3">
-                    <span className="text-primary">🏆</span> Hall of Fame
+                    <span className="text-primary">🏆</span> {t('명예의 전당')}
                 </h3>
 
                 {/* Top 3 Grid */}
@@ -233,7 +239,7 @@ function ResultContent() {
                                     <h4 className={`font-bold text-white mb-2 ${isFirst ? 'text-2xl' : 'text-lg'} line-clamp-1`}>{candidate.name}</h4>
                                     <div className="space-y-2">
                                         <div className="flex justify-between text-sm">
-                                            <span className="text-slate-400">1:1 Win Rate</span>
+                                            <span className="text-slate-400">{t('1:1 승률')}</span>
                                             <span className={`font-bold ${Number(winRate) >= 50 ? 'text-green-400' : 'text-rose-400'}`}>{winRate}%</span>
                                         </div>
                                         <div className="h-2 w-full bg-slate-700 rounded-full overflow-hidden">
@@ -243,7 +249,7 @@ function ResultContent() {
                                             />
                                         </div>
                                         <div className="flex justify-between text-sm pt-1">
-                                            <span className="text-slate-400">Final Wins</span>
+                                            <span className="text-slate-400">{t('최종 우승')}</span>
                                             <span className="font-bold text-white">{candidate.win_count}</span>
                                         </div>
                                     </div>
@@ -285,7 +291,7 @@ function ResultContent() {
                                             />
                                         </div>
                                     </div>
-                                    <span className="text-xs text-slate-500">{candidate.win_count} Wins</span>
+                                    <span className="text-xs text-slate-500">{t('승', { count: candidate.win_count })}</span>
                                 </div>
                             </div>
                         );
@@ -294,9 +300,10 @@ function ResultContent() {
             </div>
 
             <div className="border-t pt-8">
-                <h3 className="text-2xl font-bold mb-6">Comments</h3>
+                <h3 className="text-2xl font-bold mb-6">{t('댓글')}</h3>
                 <CommentList worldcupId={id} />
             </div>
+
 
             {/* Image Preview Modal */}
             <ImagePreviewModal

@@ -1,13 +1,14 @@
-import { redirect, notFound } from 'next/navigation';
+import { redirect } from '@/navigation';
+import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import EditForm from './EditForm';
 
 interface Props {
-    params: Promise<{ id: string }>;
+    params: Promise<{ id: string; locale: string }>;
 }
 
 export default async function EditPage({ params }: Props) {
-    const { id } = await params;
+    const { id, locale } = await params;
     const supabase = await createClient();
 
     const {
@@ -15,7 +16,8 @@ export default async function EditPage({ params }: Props) {
     } = await supabase.auth.getUser();
 
     if (!user) {
-        redirect('/auth/login');
+        redirect({ href: '/auth/login', locale });
+        return null;
     }
 
     // Fetch WorldCup
@@ -31,7 +33,7 @@ export default async function EditPage({ params }: Props) {
 
     // Check ownership
     if (worldcup.owner_id !== user.id) {
-        redirect('/'); // Or show unauthorized error
+        redirect({ href: '/', locale }); // Or show unauthorized error
     }
 
     // Fetch Candidates

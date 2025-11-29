@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslations } from 'next-intl';
 
 interface Candidate {
     name: string;
@@ -19,11 +20,12 @@ export default function CandidateFormList({
     onCandidateChange,
     onPreviewImage,
 }: CandidateFormListProps) {
+    const t = useTranslations();
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
                 <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                    Candidates ({candidates.filter(c => c.name && c.url).length} / {selectedRound})
+                    {t('후보 ({current} / {total})', { current: candidates.filter(c => c.name && c.url).length, total: selectedRound })}
                 </label>
             </div>
 
@@ -45,7 +47,7 @@ export default function CandidateFormList({
                                 />
                             ) : (
                                 <div className="flex h-full w-full items-center justify-center text-[10px] text-muted-foreground">
-                                    No Img
+                                    {t('이미지 없음')}
                                 </div>
                             )}
                         </div>
@@ -53,21 +55,21 @@ export default function CandidateFormList({
                         {/* Right: Inputs */}
                         <div className="flex flex-1 flex-col justify-center space-y-3">
                             <div className="space-y-1">
-                                <label className="text-xs font-medium text-muted-foreground">Name</label>
+                                <label className="text-xs font-medium text-muted-foreground">{t('이름')}</label>
                                 <input
                                     value={candidate.name}
                                     onChange={(e) => onCandidateChange(index, 'name', e.target.value)}
                                     className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                    placeholder="Candidate Name"
+                                    placeholder={t('후보 이름')}
                                 />
                             </div>
                             <div className="space-y-1">
-                                <label className="text-xs font-medium text-muted-foreground">Image URL</label>
+                                <label className="text-xs font-medium text-muted-foreground">{t('이미지 URL')}</label>
                                 <input
                                     value={candidate.url}
                                     onChange={(e) => onCandidateChange(index, 'url', e.target.value)}
                                     className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                    placeholder="Image URL (https://...)"
+                                    placeholder={t('이미지 URL (https://)')}
                                 />
                             </div>
                         </div>
@@ -81,9 +83,9 @@ export default function CandidateFormList({
                     <thead className="[&_tr]:border-b">
                         <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
                             <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[50px]">#</th>
-                            <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground min-w-[150px]">Candidate Name</th>
-                            <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground min-w-[200px]">Image URL</th>
-                            <th className="h-12 px-4 text-center align-middle font-medium text-muted-foreground w-[100px]">Preview</th>
+                            <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground min-w-[150px]">{t('후보 이름')}</th>
+                            <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground min-w-[200px]">{t('이미지 URL')}</th>
+                            <th className="h-12 px-4 text-center align-middle font-medium text-muted-foreground w-[100px]">{t('미리보기')}</th>
                         </tr>
                     </thead>
                     <tbody className="[&_tr:last-child]:border-0">
@@ -97,7 +99,7 @@ export default function CandidateFormList({
                                         value={candidate.name}
                                         onChange={(e) => onCandidateChange(index, 'name', e.target.value)}
                                         className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                        placeholder="Candidate Name"
+                                        placeholder={t('후보 이름')}
                                     />
                                 </td>
                                 <td className="p-4 align-middle">
@@ -118,7 +120,7 @@ export default function CandidateFormList({
                                         />
                                     ) : (
                                         <div className="w-16 h-16 bg-muted rounded mx-auto flex items-center justify-center text-xs text-muted-foreground">
-                                            No Image
+                                            {t('이미지 없음')}
                                         </div>
                                     )}
                                 </td>

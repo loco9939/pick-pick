@@ -1,6 +1,7 @@
 import React from 'react';
-import Link from 'next/link';
+import { Link } from '@/navigation';
 import WorldCupThumbnail from './WorldCupThumbnail';
+import { useTranslations } from 'next-intl';
 
 interface WorldCupCardProps {
     id: string;
@@ -13,6 +14,7 @@ interface WorldCupCardProps {
 }
 
 const WorldCupCard: React.FC<WorldCupCardProps> = ({ id, title, description, thumbnailUrl, totalPlays, candidateCount = 0, actions }) => {
+    const t = useTranslations();
     return (
         <div className="group relative block overflow-hidden rounded-xl border border-slate-800 bg-slate-900/50 text-slate-300 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_15px_rgba(139,92,246,0.5)] hover:border-primary/50">
             <Link href={`/play/${id}/intro`} className="block">
@@ -27,20 +29,20 @@ const WorldCupCard: React.FC<WorldCupCardProps> = ({ id, title, description, thu
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
                         </span>
-                        {totalPlays ? totalPlays.toLocaleString() : 0} Plays
+                        {totalPlays ? totalPlays.toLocaleString() : 0} {t('플레이 횟수')}
                     </div>
 
                     {/* Best Ribbon (Mock logic: > 100 plays) */}
                     {(totalPlays || 0) > 100 && (
                         <div className="absolute top-3 -right-8 w-32 rotate-45 bg-yellow-500 py-0.5 text-center text-[10px] font-bold text-black shadow-sm">
-                            BEST
+                            {t('베스트')}
                         </div>
                     )}
                 </div>
                 <div className="p-4 pb-0">
                     <div className="flex items-start justify-between mb-2 gap-2">
                         <h3 className="text-lg font-extrabold leading-tight text-white group-hover:text-primary line-clamp-2 min-h-[3rem] transition-colors">{title}</h3>
-                        <span className="text-sm text-slate-400 whitespace-nowrap">{candidateCount} 강</span>
+                        <span className="text-sm text-slate-400 whitespace-nowrap">{t('강', { count: candidateCount })}</span>
                     </div>
                     <p className="text-sm text-slate-400 line-clamp-2 min-h-[2.5rem] mb-4">{description}</p>
                 </div>

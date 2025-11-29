@@ -1,11 +1,16 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/navigation';
 import { supabase } from '@/lib/supabase/client';
+import { useTranslations } from 'next-intl';
+
+import { useGlobalAlert } from '@/components/common/GlobalAlertProvider';
 
 export default function LoginPage() {
     const router = useRouter();
+    const t = useTranslations();
+    const { showAlert } = useGlobalAlert();
     const [email, setEmail] = useState('');
 
     const [password, setPassword] = useState('');
@@ -38,7 +43,7 @@ export default function LoginPage() {
                     router.refresh();
                 } else if (data.user) {
                     // Needs confirmation
-                    alert('Check your email for the confirmation link!');
+                    await showAlert(t('이메일을 확인해주세요!'));
                 }
             } else {
                 const { error } = await supabase.auth.signInWithPassword({
@@ -50,7 +55,7 @@ export default function LoginPage() {
                 router.refresh();
             }
         } catch (error: any) {
-            alert(error.message);
+            await showAlert(error.message);
         } finally {
             setIsLoading(false);
         }
@@ -66,7 +71,7 @@ export default function LoginPage() {
             });
             if (error) throw error;
         } catch (error: any) {
-            alert(error.message);
+            await showAlert(error.message);
         }
     };
 
@@ -75,18 +80,18 @@ export default function LoginPage() {
             <div className="mx-auto flex w-full flex-col justify-center space-y-6 max-w-[500px] min-h-[calc(100vh-256px)]">
                 <div className="flex flex-col space-y-2 text-center">
                     <h1 className="text-2xl font-semibold tracking-tight">
-                        {isSignUp ? 'Create an account' : 'Welcome back'}
+                        {isSignUp ? t('계정 만들기') : t('환영합니다')}
                     </h1>
                     <p className="text-sm text-muted-foreground">
-                        Enter your email to {isSignUp ? 'sign up' : 'sign in'}
+                        {t('이메일로 로그인 또는 가입')}
                     </p>
                 </div>
                 <div className="grid gap-6">
                     <form onSubmit={handleEmailAuth}>
-                        <div className="grid gap-2">
+                        <div className="grid gap-4">
                             <div className="grid gap-2">
                                 <label htmlFor="email">
-                                    Email
+                                    {t('이메일')}
                                 </label>
                                 <input
                                     id="email"
@@ -102,7 +107,7 @@ export default function LoginPage() {
                                     required
                                 />
                                 <label htmlFor="password">
-                                    Password
+                                    {t('비밀번호')}
                                 </label>
                                 <input
                                     id="password"
@@ -119,7 +124,7 @@ export default function LoginPage() {
                                 {isSignUp && (
                                     <>
                                         <label htmlFor="confirmPassword">
-                                            Confirm Password
+                                            {t('비밀번호 확인')}
                                         </label>
                                         <input
                                             id="confirmPassword"
@@ -143,7 +148,7 @@ export default function LoginPage() {
                                 {isLoading && (
                                     <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                                 )}
-                                {isSignUp ? 'Sign Up with Email' : 'Sign In with Email'}
+                                {isSignUp ? t('이메일로 가입하기') : t('이메일로 로그인하기')}
                             </button>
                         </div>
                     </form>
@@ -153,7 +158,7 @@ export default function LoginPage() {
                         </div>
                         <div className="relative flex justify-center text-xs uppercase">
                             <span className="bg-background px-2 text-muted-foreground">
-                                Or continue with
+                                {t('또는 다음으로 계속')}
                             </span>
                         </div>
                     </div>
@@ -164,17 +169,17 @@ export default function LoginPage() {
                             className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-slate-200 bg-white text-slate-900 shadow-sm hover:bg-slate-50 h-10 px-4 py-2"
                         >
                             <img src="/google-logo.png" alt="Google" className="mr-2 h-4 w-4" />
-                            {isSignUp ? 'Sign Up with Google' : 'Sign In with Google'}
+                            {isSignUp ? t('Google로 가입하기') : t('Google로 로그인하기')}
                         </button>
 
                     </div>
                     <div className="text-center text-sm text-muted-foreground">
-                        {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
+                        {isSignUp ? t('이미 계정이 있으신가요?') : t('계정이 없으신가요?')}
                         <button
                             onClick={() => setIsSignUp(!isSignUp)}
-                            className="underline hover:text-primary"
+                            className="ml-2 underline hover:text-primary"
                         >
-                            {isSignUp ? 'Sign In' : 'Sign Up'}
+                            {isSignUp ? t('로그인') : t('가입하기')}
                         </button>
                     </div>
                 </div>

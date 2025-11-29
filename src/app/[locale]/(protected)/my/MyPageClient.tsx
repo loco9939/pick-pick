@@ -1,16 +1,21 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useRouter } from '@/navigation';
 import { supabase } from '@/lib/supabase/client';
 import { Database } from '@/lib/supabase/database.types';
 import { useUser } from '@/context/UserContext';
 import Loading from '@/components/common/Loading';
 import { Edit } from 'lucide-react';
 import WorldCupList from '@/components/worldcup/WorldCupList';
+import { useTranslations } from 'next-intl';
+
+import { useGlobalAlert } from '@/components/common/GlobalAlertProvider';
 
 export default function MyPageClient() {
     const router = useRouter();
+    const t = useTranslations();
+    const { showAlert } = useGlobalAlert();
     const { user, isLoading: isUserLoading } = useUser();
     const [profile, setProfile] = useState<Database['public']['Tables']['profiles']['Row'] | null>(null);
     const [isDataLoading, setIsDataLoading] = useState(true);
@@ -61,7 +66,7 @@ export default function MyPageClient() {
 
         if (error) {
             console.error('Error updating profile:', error);
-            alert('Failed to update profile');
+            await showAlert(t('프로필 업데이트 실패'));
         } else {
             setProfile(prev => prev ? { ...prev, nickname: newNickname.trim() } : null);
             setIsEditingProfile(false);
@@ -77,28 +82,28 @@ export default function MyPageClient() {
         <div className="container mx-auto py-8 px-4">
             {/* Profile Section */}
             <div className="mb-12 rounded-lg border bg-card p-6 shadow-sm">
-                <h2 className="mb-4 text-2xl font-bold">Profile</h2>
+                <h2 className="mb-4 text-2xl font-bold">{t('내 프로필')}</h2>
                 <div className="grid gap-4 md:grid-cols-2">
                     <div>
-                        <label className="text-sm font-medium text-muted-foreground">Email</label>
+                        <label className="text-sm font-medium text-muted-foreground">{t('이메일')}</label>
                         <div className="mt-1 text-lg">{user?.email}</div>
                     </div>
                     <div>
-                        <label className="text-sm font-medium text-muted-foreground">Nickname</label>
+                        <label className="text-sm font-medium text-muted-foreground">{t('닉네임')}</label>
                         {isEditingProfile ? (
                             <div className="mt-1 flex gap-2">
                                 <input
                                     value={newNickname}
                                     onChange={(e) => setNewNickname(e.target.value)}
                                     className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                                    placeholder="Enter nickname"
+                                    placeholder={t('닉네임을 입력하세요')}
                                 />
                                 <button
                                     onClick={handleUpdateProfile}
                                     disabled={isSavingProfile}
                                     className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2"
                                 >
-                                    {isSavingProfile ? 'Saving...' : 'Save'}
+                                    {isSavingProfile ? t('저장 중') : t('저장')}
                                 </button>
                                 <button
                                     onClick={() => {
@@ -107,16 +112,16 @@ export default function MyPageClient() {
                                     }}
                                     className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2"
                                 >
-                                    Cancel
+                                    {t('취소')}
                                 </button>
                             </div>
                         ) : (
                             <div className="mt-1 flex items-center gap-2">
-                                <span className="text-lg">{profile?.nickname || 'No nickname set'}</span>
+                                <span className="text-lg">{profile?.nickname || t('닉네임이 설정되지 않았습니다')}</span>
                                 <button
                                     onClick={() => setIsEditingProfile(true)}
                                     className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-700 bg-slate-800/50 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white"
-                                    title="Edit Profile"
+                                    title={t('프로필 수정')}
                                 >
                                     <Edit className="h-3.5 w-3.5" />
                                 </button>
@@ -126,7 +131,7 @@ export default function MyPageClient() {
                 </div>
             </div>
 
-            <h1 className="mb-8 text-3xl font-bold">My WorldCups</h1>
+            <h1 className="mb-8 text-3xl font-bold">{t('내 월드컵')}</h1>
 
             {user && <WorldCupList mode="my" userId={user.id} baseUrl="/my" />}
         </div>

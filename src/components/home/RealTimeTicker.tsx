@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
+import { useTranslations } from 'next-intl';
 
 export default function RealTimeTicker() {
     const [activities, setActivities] = useState<string[]>([]);
+    const t = useTranslations();
 
     useEffect(() => {
         const fetchActivities = async () => {
@@ -12,11 +14,15 @@ export default function RealTimeTicker() {
                 .from('worldcup_activities')
                 .select('*')
                 .order('created_at', { ascending: false })
-                .limit(10);
+                .limit(30);
 
             if (data && data.length > 0) {
                 const formattedActivities = data.map(activity =>
-                    `${activity.nickname || '익명의 사용자'}가 [${activity.worldcup_title}] 우승자로 '${activity.candidate_name}'을(를) 선택했습니다!`
+                    t('활동 메시지', {
+                        nickname: activity.nickname || t('익명의 사용자'),
+                        worldcup: activity.worldcup_title,
+                        candidate: activity.candidate_name
+                    })
                 );
                 setActivities(formattedActivities);
             }
@@ -36,7 +42,11 @@ export default function RealTimeTicker() {
                 },
                 (payload) => {
                     const newActivity = payload.new as any;
-                    const message = `${newActivity.nickname || '익명의 사용자'}가 [${newActivity.worldcup_title}] 우승자로 '${newActivity.candidate_name}'을(를) 선택했습니다!`;
+                    const message = t('활동 메시지', {
+                        nickname: newActivity.nickname || t('익명의 사용자'),
+                        worldcup: newActivity.worldcup_title,
+                        candidate: newActivity.candidate_name
+                    });
                     setActivities(prev => [message, ...prev].slice(0, 10));
                 }
             )
@@ -45,7 +55,7 @@ export default function RealTimeTicker() {
         return () => {
             supabase.removeChannel(channel);
         };
-    }, []);
+    }, [t]);
 
     return (
         <div className="w-full overflow-hidden bg-slate-900/80 border-y border-slate-800 py-2 backdrop-blur-sm">

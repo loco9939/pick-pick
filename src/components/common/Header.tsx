@@ -1,20 +1,37 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
+import { Link, useRouter } from '@/navigation';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase/client';
-import { useRouter } from 'next/navigation';
 import { useUser } from '@/context/UserContext';
+
+import { useTranslations } from 'next-intl';
+import LanguageSwitcher from '@/components/common/LanguageSwitcher';
+
+import { useGlobalAlert } from '@/components/common/GlobalAlertProvider';
 
 const Header: React.FC = () => {
     const router = useRouter();
     const { user, isLoading } = useUser();
+    const t = useTranslations();
+    const { showAlert, showConfirm } = useGlobalAlert();
 
     const handleLogout = async () => {
-        if (!window.confirm('Are you sure you want to log out?')) return;
+        const confirmed = await showConfirm(t('로그아웃 하시겠습니까?'));
+        if (!confirmed) return;
         await supabase.auth.signOut();
         router.replace('/');
+    };
+
+    const handleCreateClick = async (e: React.MouseEvent) => {
+        e.preventDefault();
+        if (!user) {
+            await showAlert(t('로그인이 필요합니다 먼저 로그인해주세요'));
+            router.push('/auth/login');
+            return;
+        }
+        router.push('/create');
     };
 
     return (
@@ -33,13 +50,14 @@ const Header: React.FC = () => {
                     </Link>
                 </div>
                 <div className="flex flex-1 items-center justify-between space-x-2 justify-end">
+                    <LanguageSwitcher />
                     <nav className="flex items-center space-x-4">
-                        <Link
-                            href="/create"
+                        <button
+                            onClick={handleCreateClick}
                             className="text-sm font-medium text-slate-300 transition-all duration-300 hover:text-fuchsia-400 hover:drop-shadow-[0_0_8px_rgba(232,121,249,0.5)] hover:scale-105"
                         >
-                            Create Worldcup
-                        </Link>
+                            {t('월드컵 만들기')}
+                        </button>
                         {isLoading ? (
                             <div className="h-5 w-20 animate-pulse rounded bg-muted" />
                         ) : user ? (
@@ -48,13 +66,13 @@ const Header: React.FC = () => {
                                     href="/my"
                                     className="text-sm font-medium text-slate-300 transition-all duration-300 hover:text-fuchsia-400 hover:drop-shadow-[0_0_8px_rgba(232,121,249,0.5)] hover:scale-105"
                                 >
-                                    My Page
+                                    {t('마이페이지')}
                                 </Link>
                                 <button
                                     onClick={handleLogout}
                                     className="text-sm font-medium text-slate-300 transition-all duration-300 hover:text-fuchsia-400 hover:drop-shadow-[0_0_8px_rgba(232,121,249,0.5)] hover:scale-105"
                                 >
-                                    Log Out
+                                    {t('로그아웃')}
                                 </button>
                             </>
                         ) : (
@@ -62,7 +80,7 @@ const Header: React.FC = () => {
                                 href="/auth/login"
                                 className="text-sm font-medium text-slate-300 transition-all duration-300 hover:text-fuchsia-400 hover:drop-shadow-[0_0_8px_rgba(232,121,249,0.5)] hover:scale-105"
                             >
-                                Sign In
+                                {t('로그인')}
                             </Link>
                         )}
                     </nav>

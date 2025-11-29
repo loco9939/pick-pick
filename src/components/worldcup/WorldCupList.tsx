@@ -1,16 +1,17 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { supabase } from '@/lib/supabase/client';
 import WorldCupCard from '@/components/worldcup/WorldCupCard';
 import { Database } from '@/lib/supabase/database.types';
-import Link from 'next/link';
 import Loading from '@/components/common/Loading';
 import { Edit, Trash2, Play } from 'lucide-react';
 import CategoryChips from '@/components/home/CategoryChips';
 import Pagination from '@/components/common/Pagination';
 import EmptyState from '@/components/home/EmptyState';
+import { Link, useRouter } from '@/navigation';
+import { useSearchParams } from 'next/navigation';
 
 type WorldCup = Database['public']['Tables']['worldcups']['Row'];
 
@@ -22,9 +23,14 @@ interface WorldCupListProps {
     baseUrl: string;
 }
 
+import { useGlobalAlert } from '@/components/common/GlobalAlertProvider';
+import { useUser } from '@/context/UserContext';
+
 export default function WorldCupList({ mode, userId, baseUrl }: WorldCupListProps) {
+    const t = useTranslations();
     const router = useRouter();
     const searchParams = useSearchParams();
+    const { showAlert, showConfirm } = useGlobalAlert();
     const [worldcups, setWorldcups] = useState<WorldCup[]>([]);
     const [isDataLoading, setIsDataLoading] = useState(true);
     const [totalPages, setTotalPages] = useState(0);
@@ -75,7 +81,8 @@ export default function WorldCupList({ mode, userId, baseUrl }: WorldCupListProp
     }, [mode, userId, category, page]);
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Are you sure you want to delete this WorldCup?')) return;
+        const confirmed = await showConfirm(t('이 월드컵을 삭제하시겠습니까?'));
+        if (!confirmed) return;
 
         const { error: wcError } = await supabase
             .from('worldcups')
@@ -84,10 +91,21 @@ export default function WorldCupList({ mode, userId, baseUrl }: WorldCupListProp
 
         if (wcError) {
             console.error('Error deleting worldcup:', wcError);
-            alert('Failed to delete WorldCup');
+            await showAlert(t('월드컵 삭제 실패'));
         } else {
             setWorldcups((prev) => prev.filter((wc) => wc.id !== id));
         }
+    };
+
+    const { user } = useUser();
+
+    const handleCreateClick = async () => {
+        if (!user) {
+            await showAlert(t('로그인이 필요합니다 먼저 로그인해주세요'));
+            router.push('/auth/login');
+            return;
+        }
+        router.push('/create');
     };
 
     return (
@@ -103,14 +121,14 @@ export default function WorldCupList({ mode, userId, baseUrl }: WorldCupListProp
                     <div className="text-center py-12 border rounded-lg bg-muted/10">
                         <p className="text-muted-foreground mb-4">
                             {category === 'all'
-                                ? "You haven't created any WorldCups yet."
-                                : "No WorldCups found in this category."}
+                                ? t('아직 생성한 월드컵이 없습니다')
+                                : t('이 카테고리에는 월드컵이 없습니다')}
                         </p>
                         <button
-                            onClick={() => router.push('/create')}
+                            onClick={handleCreateClick}
                             className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
                         >
-                            Create New WorldCup
+                            {t('월드컵 만들기')}
                         </button>
                     </div>
                 ) : (
@@ -137,7 +155,7 @@ export default function WorldCupList({ mode, userId, baseUrl }: WorldCupListProp
                                                 className="inline-flex items-center justify-center gap-1.5 rounded-md border border-slate-700 bg-slate-800/50 px-3 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
                                             >
                                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-                                                Rank
+                                                {t('랭킹 보기')}
                                             </Link>
                                             <div className='flex gap-2'>
                                                 <button
@@ -168,14 +186,14 @@ export default function WorldCupList({ mode, userId, baseUrl }: WorldCupListProp
                                         <div className="flex gap-2 mt-auto">
                                             <button className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-md bg-primary/10 px-3 py-2 text-sm font-semibold text-primary hover:bg-primary hover:text-white transition-colors">
                                                 <Play size={16} />
-                                                Play
+                                                {t('시작하기')}
                                             </button>
                                             <Link
                                                 href={`/play/${wc.id}/result`}
                                                 className="inline-flex items-center justify-center gap-1.5 rounded-md border border-slate-700 bg-slate-800/50 px-3 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
                                             >
                                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-                                                Rank
+                                                {t('랭킹 보기')}
                                             </Link>
                                         </div>
                                     )

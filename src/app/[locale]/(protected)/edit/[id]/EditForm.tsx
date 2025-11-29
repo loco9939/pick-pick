@@ -7,7 +7,7 @@ import CandidateFormList from '@/components/worldcup/CandidateFormList';
 import WorldCupBasicInfo from '@/components/worldcup/WorldCupBasicInfo';
 import { supabase } from '@/lib/supabase/client';
 import { Database } from '@/lib/supabase/database.types';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/navigation';
 
 type WorldCup = Database['public']['Tables']['worldcups']['Row'];
 type Candidate = Database['public']['Tables']['candidates']['Row'];
@@ -23,8 +23,13 @@ interface FormCandidate {
     url: string;
 }
 
+import { useGlobalAlert } from '@/components/common/GlobalAlertProvider';
+import { useTranslations } from 'next-intl';
+
 export default function EditForm({ worldcup, candidates: initialCandidates }: EditFormProps) {
+    const t = useTranslations();
     const router = useRouter();
+    const { showAlert } = useGlobalAlert();
     const [title, setTitle] = useState(worldcup.title);
     const [description, setDescription] = useState(worldcup.description || '');
     const [category, setCategory] = useState(worldcup.category || 'all');
@@ -34,7 +39,6 @@ export default function EditForm({ worldcup, candidates: initialCandidates }: Ed
     const [candidates, setCandidates] = useState<FormCandidate[]>(
         initialCandidates.map(c => ({ id: c.id, name: c.name, url: c.image_url }))
     );
-    const [error, setError] = useState('');
     const [previewImage, setPreviewImage] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -62,16 +66,15 @@ export default function EditForm({ worldcup, candidates: initialCandidates }: Ed
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError('');
 
         if (!title.trim()) {
-            setError('Title is required');
+            await showAlert(t('제목은 필수입니다'));
             return;
         }
 
         const validCandidates = candidates.filter(c => c.name.trim());
         if (validCandidates.length !== selectedRound) {
-            setError(`Please fill in all ${selectedRound} candidates.`);
+            await showAlert(t('{count}명의 후보를 모두 입력해주세요', { count: selectedRound }));
             return;
         }
 
@@ -140,7 +143,7 @@ export default function EditForm({ worldcup, candidates: initialCandidates }: Ed
             router.refresh();
         } catch (error: any) {
             console.error('Error updating WorldCup:', error);
-            setError(error.message || 'Failed to update WorldCup');
+            await showAlert(error.message || t('월드컵 수정 실패'));
         } finally {
             setIsSubmitting(false);
         }
@@ -156,16 +159,11 @@ export default function EditForm({ worldcup, candidates: initialCandidates }: Ed
             />
 
             <div className="mb-8">
-                <h1 className="text-3xl font-bold tracking-tight">Edit WorldCup</h1>
-                <p className="text-muted-foreground">Update your worldcup details.</p>
+                <h1 className="text-3xl font-bold tracking-tight">{t('월드컵 수정')}</h1>
+                <p className="text-muted-foreground">{t('월드컵 정보를 수정하세요')}</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-8">
-                {error && (
-                    <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive text-red-500">
-                        {error}
-                    </div>
-                )}
                 <WorldCupBasicInfo
                     title={title}
                     onTitleChange={setTitle}
@@ -190,14 +188,14 @@ export default function EditForm({ worldcup, candidates: initialCandidates }: Ed
                         onClick={() => router.back()}
                         className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 w-full"
                     >
-                        Cancel
+                        {t('취소')}
                     </button>
                     <button
                         type="submit"
                         disabled={isSubmitting}
                         className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 w-full"
                     >
-                        {isSubmitting ? 'Saving...' : 'Save Changes'}
+                        {isSubmitting ? t('저장 중') : t('변경사항 저장')}
                     </button>
                 </div>
             </form>

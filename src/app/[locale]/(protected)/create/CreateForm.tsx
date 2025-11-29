@@ -1,13 +1,15 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/navigation';
 import { supabase } from '@/lib/supabase/client';
 import { useUser } from '@/context/UserContext';
 import ImagePreviewModal from '@/components/common/ImagePreviewModal';
 import Loading from '@/components/common/Loading';
 import CandidateFormList from '@/components/worldcup/CandidateFormList';
+import { useGlobalAlert } from '@/components/common/GlobalAlertProvider';
 import WorldCupBasicInfo from '@/components/worldcup/WorldCupBasicInfo';
+import { useTranslations } from 'next-intl';
 
 interface Candidate {
     name: string;
@@ -16,13 +18,14 @@ interface Candidate {
 
 export default function CreateForm() {
     const router = useRouter();
+    const t = useTranslations();
+    const { showAlert } = useGlobalAlert();
     const { user, isLoading: isUserLoading } = useUser();
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [category, setCategory] = useState('all');
     const [selectedRound, setSelectedRound] = useState<number>(4);
     const [candidates, setCandidates] = useState<Candidate[]>([]);
-    const [error, setError] = useState('');
     const [previewImage, setPreviewImage] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -63,16 +66,15 @@ export default function CreateForm() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError('');
 
         if (!title.trim()) {
-            setError('Title is required');
+            await showAlert(t('제목은 필수입니다'));
             return;
         }
 
         const validCandidates = candidates.filter(c => c.name.trim());
         if (validCandidates.length !== selectedRound) {
-            setError(`Please fill in all ${selectedRound} candidates.`);
+            await showAlert(t('{count}명의 후보를 모두 입력해주세요', { count: selectedRound }));
             return;
         }
 
@@ -113,7 +115,7 @@ export default function CreateForm() {
             router.refresh();
         } catch (error: any) {
             console.error('Error creating WorldCup:', error);
-            setError(error.message || 'Failed to create WorldCup');
+            await showAlert(error.message || t('월드컵 생성 실패'));
         } finally {
             setIsSubmitting(false);
         }
@@ -129,16 +131,11 @@ export default function CreateForm() {
             />
 
             <div className="mb-8">
-                <h1 className="text-3xl font-bold tracking-tight">Create New WorldCup</h1>
-                <p className="text-muted-foreground">Create your own ideal type worldcup tournament.</p>
+                <h1 className="text-3xl font-bold tracking-tight">{t('월드컵 생성')}</h1>
+                <p className="text-muted-foreground">{t('나만의 이상형 월드컵을 만들어보세요')}</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-8">
-                {error && (
-                    <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive text-red-500">
-                        {error}
-                    </div>
-                )}
                 <WorldCupBasicInfo
                     title={title}
                     onTitleChange={setTitle}
@@ -162,7 +159,7 @@ export default function CreateForm() {
                     disabled={isSubmitting}
                     className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 w-full"
                 >
-                    {isSubmitting ? 'Creating...' : 'Create WorldCup'}
+                    {isSubmitting ? t('생성 중') : t('월드컵 만들기')}
                 </button>
             </form>
         </div>

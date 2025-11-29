@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from '@/navigation';
+import { useSearchParams } from 'next/navigation';
 import { CATEGORIES } from '@/constants/categories';
+import { useTranslations } from 'next-intl';
 
 
 
@@ -14,6 +16,7 @@ export default function CategoryChips({ baseUrl = '/' }: CategoryChipsProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
     const selected = searchParams.get('category') || 'all';
+    const t = useTranslations();
 
     const handleSelect = (id: string) => {
         const params = new URLSearchParams(searchParams.toString());
@@ -47,7 +50,7 @@ export default function CategoryChips({ baseUrl = '/' }: CategoryChipsProps) {
                             {/* Glass reflection effect */}
                             <div className={`absolute inset-0 -z-10 bg-gradient-to-b from-white/5 to-transparent opacity-0 transition-opacity duration-300 ${isSelected ? 'opacity-100' : 'group-hover:opacity-100'}`} />
 
-                            {category.label}
+                            {t(category.label)}
                         </button>
                     );
                 })}
