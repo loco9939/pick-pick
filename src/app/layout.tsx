@@ -4,6 +4,8 @@ import Header from "@/components/common/Header";
 import Footer from "@/components/common/Footer";
 import { UserProvider } from "@/context/UserContext";
 
+import GoogleAnalytics from "@/components/common/GoogleAnalytics";
+
 export const metadata: Metadata = {
   title: "PickPick - WorldCup Game Platform",
   description: "Create and play your own WorldCup games. Vote for your favorites and see the rankings!",
@@ -50,6 +52,7 @@ export default function RootLayout({
       <body
         className={`antialiased min-h-screen flex flex-col`}
       >
+        <GoogleAnalytics />
         <UserProvider>
           <Header />
           <main className="flex-1 flex flex-col items-center justify-center">
