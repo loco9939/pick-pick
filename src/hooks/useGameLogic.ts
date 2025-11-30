@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase/client';
+import { useTranslations } from 'next-intl';
 
 export interface Candidate {
     id: string;
@@ -16,6 +17,7 @@ interface GameState {
 }
 
 export default function useGameLogic(initialCandidates: Candidate[]) {
+    const t = useTranslations();
     const [candidates, setCandidates] = useState<Candidate[]>([]);
     const [nextRoundCandidates, setNextRoundCandidates] = useState<Candidate[]>([]);
     const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
@@ -90,8 +92,8 @@ export default function useGameLogic(initialCandidates: Candidate[]) {
     }, [candidates, currentMatchIndex, nextRoundCandidates, getCurrentPair]);
 
     const getRoundName = (count: number) => {
-        if (count === 2) return '결승';
-        return `${count}강`;
+        if (count === 2) return t('결승');
+        return t('강', { count });
     };
 
     const gameState: GameState = {

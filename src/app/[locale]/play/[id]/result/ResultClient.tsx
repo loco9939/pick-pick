@@ -166,11 +166,11 @@ function ResultContent() {
                     <div className="text-2xl font-bold text-white my-4">{winner.name}</div>
 
                     <div className="grid grid-cols-2 gap-8 w-full max-w-2xl mb-10">
-                        <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700 backdrop-blur-sm text-center">
+                        <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700 backdrop-blur-sm text-center">
                             <div className="text-4xl font-black text-white mb-1">{winner.win_count}</div>
                             <div className="text-sm font-medium text-slate-400 uppercase tracking-wider">{t('최종 우승')}</div>
                         </div>
-                        <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700 backdrop-blur-sm text-center">
+                        <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700 backdrop-blur-sm text-center">
                             <div className="text-4xl font-black text-primary mb-1">
                                 {winner.match_expose_count > 0
                                     ? ((winner.match_win_count / winner.match_expose_count) * 100).toFixed(1)

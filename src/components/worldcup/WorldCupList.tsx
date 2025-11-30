@@ -184,7 +184,12 @@ export default function WorldCupList({ mode, userId, baseUrl }: WorldCupListProp
                                         </div>
                                     ) : (
                                         <div className="flex gap-2 mt-auto">
-                                            <button className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-md bg-primary/10 px-3 py-2 text-sm font-semibold text-primary hover:bg-primary hover:text-white transition-colors">
+                                            <button className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-md bg-primary/10 px-3 py-2 text-sm font-semibold text-primary hover:bg-primary hover:text-white transition-colors"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    e.preventDefault();
+                                                    router.push(`/play/${wc.id}/intro`);
+                                                }}>
                                                 <Play size={16} />
                                                 {t('시작하기')}
                                             </button>

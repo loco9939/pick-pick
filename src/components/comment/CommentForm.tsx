@@ -112,6 +112,8 @@ export default function CommentForm({
                     setNickname('');
                     setPassword('');
                 }
+            } else {
+                await showAlert(t('댓글이 수정되었습니다'));
             }
             onCommentAdded();
         } catch (err) {
@@ -123,76 +125,83 @@ export default function CommentForm({
     };
 
     return (
-        <form onSubmit={handleSubmit} className="mt-4 space-y-2">
-            <div className='flex gap-2'>
-                <div className='flex-1'>
-                    <label htmlFor="nickname" className="block text-sm font-medium text-slate-300 mb-1">
-                        {t('닉네임')}
-                    </label>
-                    <input
-                        type="text"
-                        id="nickname"
-                        value={nickname}
-                        onChange={(e) => setNickname(e.target.value)}
-                        placeholder={t('닉네임을 입력하세요')}
-                        className="w-full rounded-md border p-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+        <form onSubmit={handleSubmit} className="flex gap-4 p-4 bg-slate-900/30 rounded-xl border border-slate-800/50">
+            <div className="flex-shrink-0">
+                <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400">
+                    {/* Placeholder Avatar */}
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+                        <path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clipRule="evenodd" />
+                    </svg>
+                </div>
+            </div>
+            <div className="flex-grow space-y-3">
+                <div className="flex gap-2">
+                    <div className="flex-1 min-w-0 max-w-[200px]">
+                        <input
+                            type="text"
+                            value={nickname}
+                            onChange={(e) => setNickname(e.target.value)}
+                            placeholder={t('닉네임')}
+                            className="w-full bg-slate-950/50 rounded-lg border border-slate-800 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-all"
+                            disabled={isSubmitting}
+                            required
+                            maxLength={12}
+                        />
+                        <p className="text-xs text-slate-500 mt-1 text-right">{nickname.length}/12</p>
+                    </div>
+                    {showPasswordField && (
+                        <div className="flex-1 min-w-0 max-w-[200px]">
+                            <input
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                placeholder={t('비밀번호')}
+                                className="w-full bg-slate-950/50 rounded-lg border border-slate-800 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-all"
+                                disabled={isSubmitting}
+                                required={isAnonymousComment || !commentId}
+                                autoComplete='new-password'
+                                maxLength={4}
+                            />
+                            <p className="text-xs text-slate-500 mt-1 text-right">{password.length}/4</p>
+                        </div>
+                    )}
+                </div>
+
+                <div className="relative">
+                    <textarea
+                        value={content}
+                        onChange={(e) => setContent(e.target.value)}
+                        placeholder={t('댓글을 입력하세요')}
+                        className="w-full min-h-[100px] bg-slate-950/50 rounded-lg border border-slate-800 p-3 text-sm text-slate-200 placeholder:text-slate-500 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary resize-y transition-all"
                         disabled={isSubmitting}
                         required
+                        maxLength={200}
                     />
+                    <p className="absolute bottom-3 right-3 text-xs text-slate-500 pointer-events-none">
+                        {content.length}/200
+                    </p>
                 </div>
-                {showPasswordField && (
-                    <div className='flex-1'>
-                        <label htmlFor="password" className="block text-sm font-medium text-slate-300 mb-1">
-                            {t('비밀번호')}
-                        </label>
-                        <input
-                            type="password"
-                            id="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            placeholder={t('비밀번호 (수정/삭제용)')}
-                            className="w-full rounded-md border p-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                            disabled={isSubmitting}
-                            required={isAnonymousComment || !commentId}
-                            autoComplete='new-password'
-                        />
-                    </div>
-                )}
-            </div>
 
-            <div>
-                <label htmlFor="content" className="block text-sm font-medium text-slate-300 mb-1">
-                    {t('댓글')}
-                </label>
-                <textarea
-                    id="content"
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    placeholder={t('댓글을 입력하세요')}
-                    className="w-full rounded-md border p-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary resize-none"
-                    rows={3}
-                    disabled={isSubmitting}
-                    required
-                />
-            </div>
-            <div className="flex justify-end gap-2">
-                {onCancel && (
+                <div className="flex justify-end gap-2">
+                    {onCancel && (
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={onCancel}
+                            disabled={isSubmitting}
+                            className="text-slate-400 hover:bg-slate-800 hover:text-white"
+                        >
+                            {t('취소')}
+                        </Button>
+                    )}
                     <Button
-                        type="button"
-                        variant="ghost"
-                        onClick={onCancel}
-                        disabled={isSubmitting}
-                        className="text-slate-400 hover:bg-slate-800 hover:text-white"
+                        type="submit"
+                        disabled={isSubmitting || !content.trim() || !nickname.trim() || (showPasswordField && !password.trim())}
+                        className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-6"
                     >
-                        {t('취소')}
+                        {isSubmitting ? (commentId ? t('수정 중') : t('등록 중')) : (commentId ? t('수정') : t('등록'))}
                     </Button>
-                )}
-                <Button
-                    type="submit"
-                    disabled={isSubmitting || !content.trim() || !nickname.trim() || (showPasswordField && !password.trim())}
-                >
-                    {isSubmitting ? (commentId ? t('수정 중') : t('게시 중')) : (commentId ? t('수정') : t('게시'))}
-                </Button>
+                </div>
             </div>
         </form>
     );
