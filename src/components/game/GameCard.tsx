@@ -50,7 +50,7 @@ const GameCard: React.FC<GameCardProps> = ({ candidate, onClick, isSelected, isU
     return (
         <motion.button
             onClick={onClick}
-            className={`group relative flex h-full w-full flex-col overflow-hidden rounded-xl border-2 border-transparent bg-card text-card-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-300 ${borderClass}`}
+            className={`group relative flex h-full w-full flex-col overflow-hidden border-2 border-transparent bg-card text-card-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-300 ${borderClass}`}
             variants={variants}
             initial="initial"
             animate={isSelected ? "selected" : isUnselected ? "unselected" : "animate"}

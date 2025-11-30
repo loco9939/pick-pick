@@ -172,7 +172,7 @@ export default function CommentForm({
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
                         placeholder={t('댓글을 입력하세요')}
-                        className="w-full min-h-[100px] bg-slate-950/50 rounded-lg border border-slate-800 p-3 text-sm text-slate-200 placeholder:text-slate-500 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary resize-y transition-all"
+                        className="w-full min-h-[100px] bg-slate-950/50 rounded-lg border border-slate-800 p-3 text-sm text-slate-200 placeholder:text-slate-500 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary resize-none transition-all"
                         disabled={isSubmitting}
                         required
                         maxLength={200}

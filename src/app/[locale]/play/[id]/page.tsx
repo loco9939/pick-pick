@@ -121,7 +121,7 @@ export default function GamePlayPage() {
     if (!left || !right) return null;
 
     return (
-        <div className="relative h-[calc(100dvh-4rem)] w-full overflow-hidden bg-background">
+        <div className="fixed top-14 left-0 right-0 bottom-0 w-full overflow-hidden bg-background">
             <AnimatePresence>
                 {showRoundTransition && (
                     <RoundTransition round={gameState.round} />
@@ -145,14 +145,14 @@ export default function GamePlayPage() {
             </div>
 
             {!showRoundTransition && (
-                <div className="relative flex h-full w-full flex-col md:flex-row">
+                <div className="relative flex h-full w-full flex-col sm:flex-row">
                     <AnimatePresence mode="popLayout">
                         {(!selectedId || selectedId === left.id) && (
                             <motion.div
                                 layout
                                 key={left.id}
                                 className={`
-                                    relative flex-1 w-full md:h-full
+                                    relative flex-1 w-full sm:h-full min-h-0
                                     ${selectedId === left.id ? 'absolute inset-0 z-30 h-full' : ''}
                                 `}
                                 initial={{ opacity: 0, x: -50 }}
@@ -163,7 +163,7 @@ export default function GamePlayPage() {
                                     opacity: { duration: 0.3 }
                                 }}
                             >
-                                <div className="h-full w-full p-2 md:p-0">
+                                <div className="h-full w-full">
                                     <GameCard
                                         candidate={left}
                                         onClick={() => handleSelect(left.id)}
@@ -177,9 +177,9 @@ export default function GamePlayPage() {
 
                         {/* VS Badge */}
                         {!selectedId && (
-                            <div className="relative z-20 flex shrink-0 items-center justify-center md:absolute md:top-1/2 md:left-1/2 md:py-0 md:-translate-x-1/2 md:-translate-y-1/2 pointer-events-none">
-                                <div className="relative flex h-16 w-16 md:h-20 md:w-20 items-center justify-center rounded-full bg-slate-900 border-4 border-slate-700 shadow-[0_0_30px_rgba(139,92,246,0.5)]">
-                                    <span className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-br from-cyan-400 to-rose-500">
+                            <div className="relative z-20 flex shrink-0 items-center justify-center sm:absolute sm:top-1/2 sm:left-1/2 sm:py-0 sm:-translate-x-1/2 sm:-translate-y-1/2 pointer-events-none">
+                                <div className="relative flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-full bg-slate-900 border-4 border-slate-700 shadow-[0_0_30px_rgba(139,92,246,0.5)]">
+                                    <span className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-br from-cyan-400 to-rose-500">
                                         VS
                                     </span>
                                     <div className="absolute inset-0 rounded-full animate-pulse bg-gradient-to-tr from-cyan-500/20 to-rose-500/20 blur-xl" />
@@ -192,7 +192,7 @@ export default function GamePlayPage() {
                                 layout
                                 key={right.id}
                                 className={`
-                                    relative flex-1 w-full md:h-full
+                                    relative flex-1 w-full sm:h-full min-h-0
                                     ${selectedId === right.id ? 'absolute inset-0 z-30 h-full' : ''}
                                 `}
                                 initial={{ opacity: 0, x: 50 }}
@@ -203,7 +203,7 @@ export default function GamePlayPage() {
                                     opacity: { duration: 0.3 }
                                 }}
                             >
-                                <div className="h-full w-full p-2 md:p-0">
+                                <div className="h-full w-full p-0">
                                     <GameCard
                                         candidate={right}
                                         onClick={() => handleSelect(right.id)}
