@@ -86,7 +86,7 @@ export default function IntroPage() {
 
             <Button
                 size="lg"
-                className="w-1/4 text-lg py-6 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25 animate-pulse"
+                className="w-1/3 text-lg py-6 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25 animate-pulse"
                 onClick={() => router.push(`/play/${id}`)}
             >
                 {t('게임 시작')}
