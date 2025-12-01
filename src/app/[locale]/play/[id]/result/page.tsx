@@ -3,14 +3,16 @@ import ResultClient from './ResultClient';
 import { generateWorldCupMetadata } from '@/utils/metadata';
 
 interface Props {
-    params: { id: string };
-    searchParams: { winnerId?: string };
+    params: Promise<{ id: string }>;
+    searchParams: Promise<{ winnerId?: string }>;
 }
 
 export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
+    const { id } = await params;
+    const { winnerId } = await searchParams;
     return generateWorldCupMetadata({
-        worldcupId: params.id,
-        winnerId: searchParams.winnerId
+        worldcupId: id,
+        winnerId: winnerId
     });
 }
 
