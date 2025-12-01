@@ -140,6 +140,8 @@
     "오류가 발생했습니다": "An error occurred",
     "잠시 후 다시 시도해주세요": "Please try again later.",
     "다시 시도": "Try again",
+    "임시 저장": "Save Draft",
+    "작성중": "Writing...",
     "LanguageSwitcher": {
         "label": "Change Language"
     }

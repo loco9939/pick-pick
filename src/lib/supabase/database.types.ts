@@ -45,6 +45,7 @@ export type Database = {
           total_plays: number
           candidate_count: number
           category: string
+          is_public: boolean
         }
         Insert: {
           id?: string
@@ -57,6 +58,7 @@ export type Database = {
           total_plays?: number
           candidate_count?: number
           category?: string
+          is_public?: boolean
         }
         Update: {
           id?: string
@@ -69,6 +71,7 @@ export type Database = {
           total_plays?: number
           candidate_count?: number
           category?: string
+          is_public?: boolean
         }
         Relationships: [
         ]

@@ -64,7 +64,7 @@ export default function CreateForm() {
         setCandidates(newCandidates);
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent, isDraft: boolean = false) => {
         e.preventDefault();
 
         if (!title.trim()) {
@@ -73,10 +73,15 @@ export default function CreateForm() {
         }
 
         const validCandidates = candidates.filter(c => c.name.trim());
-        if (validCandidates.length !== selectedRound) {
+
+        // Only validate candidate count if not a draft
+        if (!isDraft && validCandidates.length !== selectedRound) {
             await showAlert(t('{count}명의 후보를 모두 입력해주세요', { count: selectedRound }));
             return;
         }
+
+        // For drafts, at least one candidate (or just title) might be enough, but let's require at least title (already checked)
+        // Maybe warn if no candidates?
 
         try {
             setIsSubmitting(true);
@@ -88,9 +93,10 @@ export default function CreateForm() {
                     title,
                     description,
                     owner_id: user.id,
-                    thumbnail_url: validCandidates[0]?.url || '', // Use first candidate as thumbnail, or empty string
+                    thumbnail_url: validCandidates[0]?.url || '',
                     candidate_count: selectedRound,
                     category,
+                    is_public: !isDraft
                 })
                 .select()
                 .single();
@@ -98,20 +104,26 @@ export default function CreateForm() {
             if (worldcupError) throw worldcupError;
 
             // 2. Insert Candidates
-            const candidatesToInsert = validCandidates.map(c => ({
-                worldcup_id: worldcup.id,
-                name: c.name,
-                image_url: c.url,
-            }));
+            if (validCandidates.length > 0) {
+                const candidatesToInsert = validCandidates.map(c => ({
+                    worldcup_id: worldcup.id,
+                    name: c.name,
+                    image_url: c.url,
+                }));
 
-            const { error: candidatesError } = await supabase
-                .from('candidates')
-                .insert(candidatesToInsert);
+                const { error: candidatesError } = await supabase
+                    .from('candidates')
+                    .insert(candidatesToInsert);
 
-            if (candidatesError) throw candidatesError;
+                if (candidatesError) throw candidatesError;
+            }
 
             // 3. Redirect
-            router.push(`/play/${worldcup.id}`);
+            if (isDraft) {
+                router.push('/my');
+            } else {
+                router.push(`/play/${worldcup.id}`);
+            }
             router.refresh();
         } catch (error: any) {
             console.error('Error creating WorldCup:', error);
@@ -135,7 +147,7 @@ export default function CreateForm() {
                 <p className="text-muted-foreground">{t('나만의 이상형 월드컵을 만들어보세요')}</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-8">
+            <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-8">
                 <WorldCupBasicInfo
                     title={title}
                     onTitleChange={setTitle}
@@ -154,13 +166,23 @@ export default function CreateForm() {
                     onPreviewImage={setPreviewImage}
                 />
 
-                <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 w-full"
-                >
-                    {isSubmitting ? t('생성 중') : t('월드컵 만들기')}
-                </button>
+                <div className="flex gap-4">
+                    <button
+                        type="button"
+                        onClick={(e) => handleSubmit(e, true)}
+                        disabled={isSubmitting}
+                        className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 w-full"
+                    >
+                        {isSubmitting ? t('저장 중') : t('임시 저장')}
+                    </button>
+                    <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 w-full"
+                    >
+                        {isSubmitting ? t('생성 중') : t('월드컵 만들기')}
+                    </button>
+                </div>
             </form>
         </div>
     );

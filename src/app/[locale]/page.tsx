@@ -19,6 +19,7 @@ export default async function Home() {
     .from('worldcups')
     .select('*')
     .eq('is_deleted', false)
+    .eq('is_public', true)
     .order('total_plays', { ascending: false })
     .limit(1)
     .single();

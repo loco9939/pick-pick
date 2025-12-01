@@ -64,7 +64,7 @@ export default function EditForm({ worldcup, candidates: initialCandidates }: Ed
         setCandidates(newCandidates);
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent, isDraft: boolean = false) => {
         e.preventDefault();
 
         if (!title.trim()) {
@@ -73,7 +73,9 @@ export default function EditForm({ worldcup, candidates: initialCandidates }: Ed
         }
 
         const validCandidates = candidates.filter(c => c.name.trim());
-        if (validCandidates.length !== selectedRound) {
+
+        // Only validate candidate count if not a draft
+        if (!isDraft && validCandidates.length !== selectedRound) {
             await showAlert(t('{count}명의 후보를 모두 입력해주세요', { count: selectedRound }));
             return;
         }
@@ -87,9 +89,10 @@ export default function EditForm({ worldcup, candidates: initialCandidates }: Ed
                 .update({
                     title,
                     description,
-                    thumbnail_url: validCandidates[0]?.url || '', // Update thumbnail to first candidate, or empty string
+                    thumbnail_url: validCandidates[0]?.url || '',
                     candidate_count: selectedRound,
                     category,
+                    is_public: !isDraft
                 })
                 .eq('id', worldcup.id);
 
@@ -111,14 +114,12 @@ export default function EditForm({ worldcup, candidates: initialCandidates }: Ed
 
             // Upsert candidates (update existing, insert new)
             const candidatesToUpsert = validCandidates.map(c => ({
-                id: c.id, // If id exists, it updates; if undefined, it inserts (but we need to handle insert carefully)
+                id: c.id,
                 worldcup_id: worldcup.id,
                 name: c.name,
                 image_url: c.url,
             }));
 
-            // Separate insert and update because upsert with undefined ID might be tricky depending on RLS/Schema
-            // Actually, for upsert to work for insert, we shouldn't pass 'id' if it's undefined.
             const toInsert = candidatesToUpsert.filter(c => !c.id).map(({ id, ...rest }) => rest);
             const toUpdate = candidatesToUpsert.filter(c => c.id);
 
@@ -130,8 +131,6 @@ export default function EditForm({ worldcup, candidates: initialCandidates }: Ed
             }
 
             if (toUpdate.length > 0) {
-                // Supabase upsert requires primary key match.
-                // We can do individual updates or upsert. Upsert is better if we trust IDs.
                 const { error: updateError } = await supabase
                     .from('candidates')
                     .upsert(toUpdate);
@@ -163,7 +162,7 @@ export default function EditForm({ worldcup, candidates: initialCandidates }: Ed
                 <p className="text-muted-foreground">{t('월드컵 정보를 수정하세요')}</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-8">
+            <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-8">
                 <WorldCupBasicInfo
                     title={title}
                     onTitleChange={setTitle}
@@ -189,6 +188,14 @@ export default function EditForm({ worldcup, candidates: initialCandidates }: Ed
                         className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 w-full"
                     >
                         {t('취소')}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={(e) => handleSubmit(e, true)}
+                        disabled={isSubmitting}
+                        className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 w-full"
+                    >
+                        {isSubmitting ? t('저장 중') : t('임시 저장')}
                     </button>
                     <button
                         type="submit"
