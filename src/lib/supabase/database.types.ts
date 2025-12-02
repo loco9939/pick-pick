@@ -48,6 +48,7 @@ export type Database = {
           is_public: boolean
           visibility: 'public' | 'private'
           status: 'draft' | 'published'
+          draft_data: Json | null
         }
         Insert: {
           id?: string

@@ -15,9 +15,10 @@ interface WorldCupCardProps {
     visibility?: 'public' | 'private';
     status?: 'draft' | 'published';
     author?: string;
+    hasDraftData?: boolean;
 }
 
-export default function WorldCupCard({ id, title, description, thumbnailUrl, totalPlays, candidateCount = 0, actions, isPublic = true, visibility, status = 'published', author }: WorldCupCardProps) {
+export default function WorldCupCard({ id, title, description, thumbnailUrl, totalPlays, candidateCount = 0, actions, isPublic = true, visibility, status = 'published', author, hasDraftData = false }: WorldCupCardProps) {
     const t = useTranslations();
     return (
         <div className="group relative block overflow-hidden rounded-xl border border-slate-800 bg-slate-900/50 text-slate-300 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_15px_rgba(139,92,246,0.5)] hover:border-primary/50">
@@ -34,6 +35,7 @@ export default function WorldCupCard({ id, title, description, thumbnailUrl, tot
                         status={status}
                         description={description}
                         author={author}
+                        hasDraftData={hasDraftData}
                         t={t}
                     />
                 </Link>
@@ -49,6 +51,7 @@ export default function WorldCupCard({ id, title, description, thumbnailUrl, tot
                         status={status}
                         description={description}
                         author={author}
+                        hasDraftData={hasDraftData}
                         t={t}
                     />
                 </div>
@@ -61,7 +64,7 @@ export default function WorldCupCard({ id, title, description, thumbnailUrl, tot
     );
 };
 
-const CardContent = ({ title, thumbnailUrl, totalPlays, candidateCount, isPublic, description, author, visibility, status, t }: any) => (
+const CardContent = ({ title, thumbnailUrl, totalPlays, candidateCount, isPublic, description, author, visibility, status, hasDraftData, t }: any) => (
     <>
         <div className="relative aspect-video overflow-hidden bg-slate-800">
             <div className="h-full w-full transition-transform duration-500 group-hover:scale-105">
@@ -79,7 +82,7 @@ const CardContent = ({ title, thumbnailUrl, totalPlays, candidateCount, isPublic
 
             {/* Visibility Badges */}
             <div className="absolute top-2 right-2 flex gap-1">
-                {status === 'draft' && (
+                {(status === 'draft' || hasDraftData) && (
                     <span className="rounded-full bg-yellow-500/20 px-2 py-0.5 text-xs font-medium text-yellow-500 backdrop-blur-sm border border-yellow-500/30">
                         {t('작성중')}
                     </span>

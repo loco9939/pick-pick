@@ -73,7 +73,7 @@ export default function CreateForm() {
             if (status === 'draft') {
                 router.push('/my');
             } else {
-                router.push(`/play/${worldcup.id}`);
+                router.push(`/play/${worldcup.id}/intro`);
             }
             router.refresh();
         } catch (error: any) {

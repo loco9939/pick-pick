@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -14,7 +14,7 @@ import {
 import { useTranslations } from 'next-intl';
 
 interface GlobalAlertContextType {
-    showAlert: (message: string, title?: string) => Promise<void>;
+    showAlert: (message: string | ReactNode, title?: string) => Promise<void>;
     showConfirm: (message: string, title?: string) => Promise<boolean>;
 }
 
@@ -34,11 +34,11 @@ export function GlobalAlertProvider({ children }: { children: React.ReactNode })
     const [config, setConfig] = useState<{
         type: 'alert' | 'confirm';
         title: string;
-        message: string;
+        message: string | ReactNode;
         resolve: (value: any) => void;
     } | null>(null);
 
-    const showAlert = useCallback((message: string, title?: string) => {
+    const showAlert = useCallback((message: string | ReactNode, title?: string) => {
         return new Promise<void>((resolve) => {
             setConfig({
                 type: 'alert',

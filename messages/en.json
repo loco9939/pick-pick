@@ -152,6 +152,7 @@
     "비공개 (링크가 있는 사람만)": "Private (Only those with link can play)",
     "다음 단계": "Next Step",
     "이전": "Previous",
+    "임시저장 되었습니다 변경사항 저장을 눌러야 실제 월드컵에 반영됩니다": "Draft saved. <br></br>You need to press 'Save Changes' to apply the changes to the actual WorldCup.",
     "LanguageSwitcher": {
         "label": "Change Language"
     }

@@ -181,6 +181,7 @@ export default function WorldCupList({ mode, userId, baseUrl, hideCategoryChips 
                                     isPublic={wc.is_public}
                                     visibility={wc.visibility}
                                     status={wc.status}
+                                    hasDraftData={mode === 'my' && !!wc.draft_data}
                                     author={wc.profiles?.nickname || t('알 수 없음')}
                                     actions={
                                         mode === 'my' ? (
