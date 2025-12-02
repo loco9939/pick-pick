@@ -21,12 +21,13 @@ interface WorldCupListProps {
     mode: 'home' | 'my';
     userId?: string; // Required if mode is 'my'
     baseUrl: string;
+    hideCategoryChips?: boolean;
 }
 
 import { useGlobalAlert } from '@/components/common/GlobalAlertProvider';
 import { useUser } from '@/context/UserContext';
 
-export default function WorldCupList({ mode, userId, baseUrl }: WorldCupListProps) {
+export default function WorldCupList({ mode, userId, baseUrl, hideCategoryChips = false }: WorldCupListProps) {
     const t = useTranslations();
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -36,6 +37,7 @@ export default function WorldCupList({ mode, userId, baseUrl }: WorldCupListProp
     const [totalPages, setTotalPages] = useState(0);
 
     const category = searchParams.get('category') || 'all';
+    const q = searchParams.get('q') || '';
     const page = Number(searchParams.get('page')) || 1;
 
     useEffect(() => {
@@ -61,6 +63,11 @@ export default function WorldCupList({ mode, userId, baseUrl }: WorldCupListProp
                 query = query.eq('category', category);
             }
 
+            // Search filter
+            if (q) {
+                query = query.or(`title.ilike.%${q}%,description.ilike.%${q}%`);
+            }
+
             // Pagination
             const from = (page - 1) * ITEMS_PER_PAGE;
             const to = from + ITEMS_PER_PAGE - 1;
@@ -78,7 +85,7 @@ export default function WorldCupList({ mode, userId, baseUrl }: WorldCupListProp
         };
 
         fetchData();
-    }, [mode, userId, category, page]);
+    }, [mode, userId, category, page, q]);
 
     const handleDelete = async (id: string) => {
         const confirmed = await showConfirm(t('이 월드컵을 삭제하시겠습니까?'));
@@ -110,7 +117,7 @@ export default function WorldCupList({ mode, userId, baseUrl }: WorldCupListProp
 
     return (
         <div>
-            <CategoryChips baseUrl={baseUrl} />
+            {!hideCategoryChips && <CategoryChips baseUrl={baseUrl} />}
 
             {isDataLoading ? (
                 <div className="flex h-64 items-center justify-center">
