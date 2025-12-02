@@ -30,7 +30,7 @@ export default function Pagination({ currentPage, totalPages, baseUrl, searchPar
 
     const renderPageButton = (page: number, content: React.ReactNode, isDisabled: boolean, isCurrent: boolean) => {
         const baseClass = "flex h-9 w-9 items-center justify-center rounded-md text-sm font-medium transition-all duration-200";
-        const activeClass = "bg-primary text-white shadow-lg shadow-primary/25 scale-105 font-bold";
+        const activeClass = "bg-primary text-primary-foreground shadow-lg shadow-primary/25 scale-105 font-bold";
         const inactiveClass = "bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white hover:scale-105";
         const disabledClass = "pointer-events-none opacity-50";
 

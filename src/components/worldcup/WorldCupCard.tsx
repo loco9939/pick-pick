@@ -12,9 +12,10 @@ interface WorldCupCardProps {
     candidateCount?: number;
     actions?: React.ReactNode;
     isPublic?: boolean;
+    author?: string;
 }
 
-const WorldCupCard: React.FC<WorldCupCardProps> = ({ id, title, description, thumbnailUrl, totalPlays, candidateCount = 0, actions, isPublic = true }) => {
+const WorldCupCard: React.FC<WorldCupCardProps> = ({ id, title, description, thumbnailUrl, totalPlays, candidateCount = 0, actions, isPublic = true, author }) => {
     const t = useTranslations();
     return (
         <div className="group relative block overflow-hidden rounded-xl border border-slate-800 bg-slate-900/50 text-slate-300 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_15px_rgba(139,92,246,0.5)] hover:border-primary/50">
@@ -27,6 +28,7 @@ const WorldCupCard: React.FC<WorldCupCardProps> = ({ id, title, description, thu
                         candidateCount={candidateCount}
                         isPublic={isPublic}
                         description={description}
+                        author={author}
                         t={t}
                     />
                 </Link>
@@ -39,6 +41,7 @@ const WorldCupCard: React.FC<WorldCupCardProps> = ({ id, title, description, thu
                         candidateCount={candidateCount}
                         isPublic={isPublic}
                         description={description}
+                        author={author}
                         t={t}
                     />
                 </div>
@@ -51,7 +54,7 @@ const WorldCupCard: React.FC<WorldCupCardProps> = ({ id, title, description, thu
     );
 };
 
-const CardContent = ({ title, thumbnailUrl, totalPlays, candidateCount, isPublic, description, t }: any) => (
+const CardContent = ({ title, thumbnailUrl, totalPlays, candidateCount, isPublic, description, author, t }: any) => (
     <>
         <div className="relative aspect-video overflow-hidden bg-slate-800">
             <div className="h-full w-full transition-transform duration-500 group-hover:scale-105">
@@ -87,6 +90,11 @@ const CardContent = ({ title, thumbnailUrl, totalPlays, candidateCount, isPublic
                 <span className="text-sm text-slate-400 whitespace-nowrap">{t('강', { count: candidateCount })}</span>
             </div>
             <p className="text-sm text-slate-400 line-clamp-2 min-h-[2.5rem] mb-4">{description}</p>
+            {author && (
+                <p className="text-xs text-slate-500 text-right mb-2">
+                    by. {author}
+                </p>
+            )}
         </div>
     </>
 );

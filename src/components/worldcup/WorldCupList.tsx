@@ -6,14 +6,19 @@ import { supabase } from '@/lib/supabase/client';
 import WorldCupCard from '@/components/worldcup/WorldCupCard';
 import { Database } from '@/lib/supabase/database.types';
 import Loading from '@/components/common/Loading';
-import { Edit, Trash2, Play } from 'lucide-react';
+import { Edit, Trash2, Play, Share2 } from 'lucide-react';
 import CategoryChips from '@/components/home/CategoryChips';
 import Pagination from '@/components/common/Pagination';
 import EmptyState from '@/components/home/EmptyState';
 import { Link, useRouter } from '@/navigation';
 import { useSearchParams } from 'next/navigation';
+import { motion } from 'framer-motion';
 
-type WorldCup = Database['public']['Tables']['worldcups']['Row'];
+type WorldCup = Database['public']['Tables']['worldcups']['Row'] & {
+    profiles: {
+        nickname: string | null;
+    } | null;
+};
 
 const ITEMS_PER_PAGE = 12;
 
@@ -46,7 +51,7 @@ export default function WorldCupList({ mode, userId, baseUrl, hideCategoryChips 
 
             let query = supabase
                 .from('worldcups')
-                .select('*', { count: 'exact' })
+                .select('*, profiles(nickname)', { count: 'exact' })
                 .eq('is_deleted', false);
 
             // Mode specific logic
@@ -115,6 +120,16 @@ export default function WorldCupList({ mode, userId, baseUrl, hideCategoryChips 
         router.push('/create');
     };
 
+    const handleShare = async (id: string) => {
+        const url = `${window.location.origin}/play/${id}/intro`;
+        try {
+            await navigator.clipboard.writeText(url);
+            await showAlert(t('링크가 복사되었습니다!'));
+        } catch (err) {
+            console.error('Failed to copy:', err);
+        }
+    };
+
     return (
         <div>
             {!hideCategoryChips && <CategoryChips baseUrl={baseUrl} />}
@@ -143,79 +158,113 @@ export default function WorldCupList({ mode, userId, baseUrl, hideCategoryChips 
                 )
             ) : (
                 <>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                        {worldcups.map((wc) => (
-                            <WorldCupCard
+                    <motion.div
+                        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                    >
+                        {worldcups.map((wc, index) => (
+                            <motion.div
                                 key={wc.id}
-                                id={wc.id}
-                                title={wc.title}
-                                description={wc.description || ''}
-                                thumbnailUrl={wc.thumbnail_url || ''}
-                                totalPlays={wc.total_plays}
-                                candidateCount={wc.candidate_count || 0}
-                                isPublic={wc.is_public}
-                                actions={
-                                    mode === 'my' ? (
-                                        <div className="flex justify-between flex-wrap justify-end gap-y-2 gap-2">
-                                            {wc.is_public && (
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.5, delay: index * 0.05 }}
+                            >
+                                <WorldCupCard
+                                    id={wc.id}
+                                    title={wc.title}
+                                    description={wc.description || ''}
+                                    thumbnailUrl={wc.thumbnail_url || ''}
+                                    totalPlays={wc.total_plays}
+                                    candidateCount={wc.candidate_count || 0}
+                                    isPublic={wc.is_public}
+                                    author={wc.profiles?.nickname || t('알 수 없음')}
+                                    actions={
+                                        mode === 'my' ? (
+                                            <div className="flex justify-between flex-wrap justify-end gap-y-2 gap-2">
+                                                {wc.is_public && (
+                                                    <Link
+                                                        href={`/play/${wc.id}/result`}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-md border border-slate-700 bg-slate-800/50 px-3 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors whitespace-nowrap"
+                                                    >
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                                                        {t('랭킹 보기')}
+                                                    </Link>
+                                                )}
+                                                <div className='flex gap-2'>
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            e.stopPropagation();
+                                                            handleShare(wc.id);
+                                                        }}
+                                                        className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-slate-700 bg-slate-800/50 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white"
+                                                        title="Share"
+                                                    >
+                                                        <Share2 className="h-4 w-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            e.stopPropagation();
+                                                            router.push(`/edit/${wc.id}`);
+                                                        }}
+                                                        className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-slate-700 bg-slate-800/50 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white"
+                                                        title="Edit"
+                                                    >
+                                                        <Edit className="h-4 w-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            e.stopPropagation();
+                                                            handleDelete(wc.id);
+                                                        }}
+                                                        className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-slate-700 bg-slate-800/50 text-slate-400 transition-colors hover:border-red-900/50 hover:bg-red-900/20 hover:text-red-400"
+                                                        title="Delete"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="flex gap-2 mt-auto flex-wrap">
+                                                <button className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-md bg-primary/10 px-3 py-2 text-sm font-semibold text-primary hover:bg-primary hover:text-white transition-colors"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        e.preventDefault();
+                                                        router.push(`/play/${wc.id}/intro`);
+                                                    }}>
+                                                    <Play size={16} />
+                                                    {t('시작하기')}
+                                                </button>
                                                 <Link
                                                     href={`/play/${wc.id}/result`}
-                                                    onClick={(e) => e.stopPropagation()}
                                                     className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-md border border-slate-700 bg-slate-800/50 px-3 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors whitespace-nowrap"
                                                 >
                                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
                                                     {t('랭킹 보기')}
                                                 </Link>
-                                            )}
-                                            <div className='flex gap-2'>
                                                 <button
                                                     onClick={(e) => {
                                                         e.preventDefault();
                                                         e.stopPropagation();
-                                                        router.push(`/edit/${wc.id}`);
+                                                        handleShare(wc.id);
                                                     }}
                                                     className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-slate-700 bg-slate-800/50 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white"
-                                                    title="Edit"
+                                                    title="Share"
                                                 >
-                                                    <Edit className="h-4 w-4" />
-                                                </button>
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        e.stopPropagation();
-                                                        handleDelete(wc.id);
-                                                    }}
-                                                    className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-slate-700 bg-slate-800/50 text-slate-400 transition-colors hover:border-red-900/50 hover:bg-red-900/20 hover:text-red-400"
-                                                    title="Delete"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
+                                                    <Share2 className="h-4 w-4" />
                                                 </button>
                                             </div>
-                                        </div>
-                                    ) : (
-                                        <div className="flex gap-2 mt-auto flex-wrap">
-                                            <button className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-md bg-primary/10 px-3 py-2 text-sm font-semibold text-primary hover:bg-primary hover:text-white transition-colors"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    e.preventDefault();
-                                                    router.push(`/play/${wc.id}/intro`);
-                                                }}>
-                                                <Play size={16} />
-                                                {t('시작하기')}
-                                            </button>
-                                            <Link
-                                                href={`/play/${wc.id}/result`}
-                                                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-md border border-slate-700 bg-slate-800/50 px-3 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors whitespace-nowrap"
-                                            >
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-                                                {t('랭킹 보기')}
-                                            </Link>
-                                        </div>
-                                    )
-                                }
-                            />
+                                        )
+                                    }
+                                />
+                            </motion.div>
                         ))}
-                    </div>
+                    </motion.div>
                     <Pagination
                         currentPage={page}
                         totalPages={totalPages}
