@@ -12,14 +12,17 @@ interface WorldCupCardProps {
     candidateCount?: number;
     actions?: React.ReactNode;
     isPublic?: boolean;
+    visibility?: 'public' | 'private';
+    status?: 'draft' | 'published';
     author?: string;
 }
 
-const WorldCupCard: React.FC<WorldCupCardProps> = ({ id, title, description, thumbnailUrl, totalPlays, candidateCount = 0, actions, isPublic = true, author }) => {
+export default function WorldCupCard({ id, title, description, thumbnailUrl, totalPlays, candidateCount = 0, actions, isPublic = true, visibility, status = 'published', author }: WorldCupCardProps) {
     const t = useTranslations();
     return (
         <div className="group relative block overflow-hidden rounded-xl border border-slate-800 bg-slate-900/50 text-slate-300 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_15px_rgba(139,92,246,0.5)] hover:border-primary/50">
-            {isPublic ? (
+            {/* Draft(임시저장)된 요소는 클릭이 불가능 -> 수정: 마이페이지에서는 가능해야 함 */}
+            {isPublic || visibility === 'private' || status === 'draft' ? (
                 <Link href={`/play/${id}/intro`} className="block">
                     <CardContent
                         title={title}
@@ -27,6 +30,8 @@ const WorldCupCard: React.FC<WorldCupCardProps> = ({ id, title, description, thu
                         totalPlays={totalPlays}
                         candidateCount={candidateCount}
                         isPublic={isPublic}
+                        visibility={visibility}
+                        status={status}
                         description={description}
                         author={author}
                         t={t}
@@ -40,6 +45,8 @@ const WorldCupCard: React.FC<WorldCupCardProps> = ({ id, title, description, thu
                         totalPlays={totalPlays}
                         candidateCount={candidateCount}
                         isPublic={isPublic}
+                        visibility={visibility}
+                        status={status}
                         description={description}
                         author={author}
                         t={t}
@@ -54,7 +61,7 @@ const WorldCupCard: React.FC<WorldCupCardProps> = ({ id, title, description, thu
     );
 };
 
-const CardContent = ({ title, thumbnailUrl, totalPlays, candidateCount, isPublic, description, author, t }: any) => (
+const CardContent = ({ title, thumbnailUrl, totalPlays, candidateCount, isPublic, description, author, visibility, status, t }: any) => (
     <>
         <div className="relative aspect-video overflow-hidden bg-slate-800">
             <div className="h-full w-full transition-transform duration-500 group-hover:scale-105">
@@ -70,12 +77,19 @@ const CardContent = ({ title, thumbnailUrl, totalPlays, candidateCount, isPublic
                 {totalPlays ? totalPlays.toLocaleString() : 0} {t('플레이 횟수')}
             </div>
 
-            {/* Draft Badge */}
-            {!isPublic && (
-                <div className="absolute top-2 right-2 flex items-center justify-center rounded-md bg-yellow-500/90 px-2 py-1 text-xs font-bold text-black shadow-sm">
-                    {t('작성중')}
-                </div>
-            )}
+            {/* Visibility Badges */}
+            <div className="absolute top-2 right-2 flex gap-1">
+                {status === 'draft' && (
+                    <span className="rounded-full bg-yellow-500/20 px-2 py-0.5 text-xs font-medium text-yellow-500 backdrop-blur-sm border border-yellow-500/30">
+                        {t('작성중')}
+                    </span>
+                )}
+                {visibility === 'private' && (
+                    <span className="rounded-full bg-slate-900/80 px-2 py-0.5 text-xs font-medium text-slate-400 backdrop-blur-sm border border-slate-700">
+                        {t('비공개')}
+                    </span>
+                )}
+            </div>
 
             {/* Best Ribbon (Mock logic: > 100 plays) */}
             {isPublic && (totalPlays || 0) > 100 && (
@@ -99,4 +113,4 @@ const CardContent = ({ title, thumbnailUrl, totalPlays, candidateCount, isPublic
     </>
 );
 
-export default WorldCupCard;
+

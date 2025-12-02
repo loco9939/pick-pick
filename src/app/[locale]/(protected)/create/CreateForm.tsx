@@ -1,32 +1,19 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from '@/navigation';
 import { supabase } from '@/lib/supabase/client';
 import { useUser } from '@/context/UserContext';
-import ImagePreviewModal from '@/components/common/ImagePreviewModal';
 import Loading from '@/components/common/Loading';
-import CandidateFormList from '@/components/worldcup/CandidateFormList';
 import { useGlobalAlert } from '@/components/common/GlobalAlertProvider';
-import WorldCupBasicInfo from '@/components/worldcup/WorldCupBasicInfo';
 import { useTranslations } from 'next-intl';
-
-interface Candidate {
-    name: string;
-    url: string;
-}
+import WorldCupForm, { WorldCupFormData } from '@/components/worldcup/WorldCupForm';
 
 export default function CreateForm() {
     const router = useRouter();
     const t = useTranslations();
     const { showAlert } = useGlobalAlert();
     const { user, isLoading: isUserLoading } = useUser();
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [category, setCategory] = useState('all');
-    const [selectedRound, setSelectedRound] = useState<number>(4);
-    const [candidates, setCandidates] = useState<Candidate[]>([]);
-    const [previewImage, setPreviewImage] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
@@ -35,54 +22,15 @@ export default function CreateForm() {
         }
     }, [user, isUserLoading, router]);
 
-    // Initialize candidates based on selected round
-    useEffect(() => {
-        setCandidates(prev => {
-            const currentCount = prev.length;
-            if (currentCount === selectedRound) return prev;
-
-            if (currentCount < selectedRound) {
-                const toAdd = selectedRound - currentCount;
-                return [...prev, ...Array.from({ length: toAdd }, () => ({ name: '', url: '' }))];
-            } else {
-                return prev.slice(0, selectedRound);
-            }
-        });
-    }, [selectedRound]);
-
     if (isUserLoading) {
         return <Loading />;
     }
 
     if (!user) {
-        return null; // Don't render anything while redirecting
+        return null;
     }
 
-    const handleCandidateChange = (index: number, field: keyof Candidate, value: string) => {
-        const newCandidates = [...candidates];
-        newCandidates[index][field] = value;
-        setCandidates(newCandidates);
-    };
-
-    const handleSubmit = async (e: React.FormEvent, isDraft: boolean = false) => {
-        e.preventDefault();
-
-        if (!title.trim()) {
-            await showAlert(t('제목은 필수입니다'));
-            return;
-        }
-
-        const validCandidates = candidates.filter(c => c.name.trim());
-
-        // Only validate candidate count if not a draft
-        if (!isDraft && validCandidates.length !== selectedRound) {
-            await showAlert(t('{count}명의 후보를 모두 입력해주세요', { count: selectedRound }));
-            return;
-        }
-
-        // For drafts, at least one candidate (or just title) might be enough, but let's require at least title (already checked)
-        // Maybe warn if no candidates?
-
+    const handleSubmit = async (data: WorldCupFormData, status: 'draft' | 'published') => {
         try {
             setIsSubmitting(true);
 
@@ -90,13 +38,15 @@ export default function CreateForm() {
             const { data: worldcup, error: worldcupError } = await supabase
                 .from('worldcups')
                 .insert({
-                    title,
-                    description,
+                    title: data.title,
+                    description: data.description,
                     owner_id: user.id,
-                    thumbnail_url: validCandidates[0]?.url || '',
-                    candidate_count: selectedRound,
-                    category,
-                    is_public: !isDraft
+                    thumbnail_url: data.candidates[0]?.url || '',
+                    candidate_count: data.selectedRound,
+                    category: data.category,
+                    is_public: status === 'published' && data.visibility === 'public',
+                    visibility: data.visibility,
+                    status: status
                 })
                 .select()
                 .single();
@@ -104,6 +54,7 @@ export default function CreateForm() {
             if (worldcupError) throw worldcupError;
 
             // 2. Insert Candidates
+            const validCandidates = data.candidates.filter(c => c.name.trim());
             if (validCandidates.length > 0) {
                 const candidatesToInsert = validCandidates.map(c => ({
                     worldcup_id: worldcup.id,
@@ -119,7 +70,7 @@ export default function CreateForm() {
             }
 
             // 3. Redirect
-            if (isDraft) {
+            if (status === 'draft') {
                 router.push('/my');
             } else {
                 router.push(`/play/${worldcup.id}`);
@@ -134,56 +85,10 @@ export default function CreateForm() {
     };
 
     return (
-        <div className="container mx-auto max-w-4xl py-12 px-6">
-            {/* Image Preview Modal */}
-            <ImagePreviewModal
-                isOpen={!!previewImage}
-                imageUrl={previewImage}
-                onClose={() => setPreviewImage(null)}
-            />
-
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold tracking-tight">{t('월드컵 생성')}</h1>
-                <p className="text-muted-foreground">{t('나만의 이상형 월드컵을 만들어보세요')}</p>
-            </div>
-
-            <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-8">
-                <WorldCupBasicInfo
-                    title={title}
-                    onTitleChange={setTitle}
-                    description={description}
-                    onDescriptionChange={setDescription}
-                    category={category}
-                    onCategoryChange={setCategory}
-                    selectedRound={selectedRound}
-                    onRoundChange={setSelectedRound}
-                />
-
-                <CandidateFormList
-                    candidates={candidates}
-                    selectedRound={selectedRound}
-                    onCandidateChange={handleCandidateChange}
-                    onPreviewImage={setPreviewImage}
-                />
-
-                <div className="flex gap-4">
-                    <button
-                        type="button"
-                        onClick={(e) => handleSubmit(e, true)}
-                        disabled={isSubmitting}
-                        className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 w-full"
-                    >
-                        {isSubmitting ? t('저장 중') : t('임시 저장')}
-                    </button>
-                    <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 w-full"
-                    >
-                        {isSubmitting ? t('생성 중') : t('월드컵 만들기')}
-                    </button>
-                </div>
-            </form>
-        </div>
+        <WorldCupForm
+            onSubmit={handleSubmit}
+            isSubmitting={isSubmitting}
+            mode="create"
+        />
     );
 }

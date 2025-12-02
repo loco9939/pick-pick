@@ -46,6 +46,8 @@ export type Database = {
           candidate_count: number
           category: string
           is_public: boolean
+          visibility: 'public' | 'private'
+          status: 'draft' | 'published'
         }
         Insert: {
           id?: string
@@ -59,6 +61,7 @@ export type Database = {
           candidate_count?: number
           category?: string
           is_public?: boolean
+          visibility?: 'public' | 'private' | 'draft'
         }
         Update: {
           id?: string
@@ -72,6 +75,7 @@ export type Database = {
           candidate_count?: number
           category?: string
           is_public?: boolean
+          visibility?: 'public' | 'private' | 'draft'
         }
         Relationships: [
         ]

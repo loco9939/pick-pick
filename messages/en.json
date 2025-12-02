@@ -146,6 +146,12 @@
     "다시 시도": "Try again",
     "임시 저장": "Save Draft",
     "작성중": "Writing...",
+    "비공개": "Private",
+    "공개 여부": "Publicity",
+    "전체 공개 (누구나 플레이 가능)": "Public (Anyone can play)",
+    "비공개 (링크가 있는 사람만)": "Private (Only those with link can play)",
+    "다음 단계": "Next Step",
+    "이전": "Previous",
     "LanguageSwitcher": {
         "label": "Change Language"
     }

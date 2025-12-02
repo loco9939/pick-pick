@@ -10,8 +10,6 @@ interface WorldCupBasicInfoProps {
     onDescriptionChange: (value: string) => void;
     category: string;
     onCategoryChange: (value: string) => void;
-    selectedRound: number;
-    onRoundChange: (value: number) => void;
 }
 
 export default function WorldCupBasicInfo({
@@ -21,20 +19,10 @@ export default function WorldCupBasicInfo({
     onDescriptionChange,
     category,
     onCategoryChange,
-    selectedRound,
-    onRoundChange,
 }: WorldCupBasicInfoProps) {
     const t = useTranslations();
     return (
         <div className="space-y-8">
-            <div className="rounded-md bg-yellow-500/10 p-4 text-sm text-yellow-500 border border-yellow-500/20 flex items-start gap-3">
-                <AlertTriangle className="h-5 w-5 shrink-0" />
-                <div className="space-y-1">
-                    <p className="font-semibold">{t('경고')}</p>
-                    <p>{t('성인 콘텐츠, 혐오 발언 등은 제재 대상이 될 수 있습니다')}</p>
-                </div>
-            </div>
-
             <div className="space-y-2">
                 <label htmlFor="title" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                     {t('제목')}
@@ -72,21 +60,6 @@ export default function WorldCupBasicInfo({
                 >
                     {CATEGORIES.map(cat => (
                         <option key={cat.id} value={cat.id}>{t(cat.label)}</option>
-                    ))}
-                </select>
-            </div>
-
-            <div className="space-y-2">
-                <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                    {t('토너먼트 크기')}
-                </label>
-                <select
-                    value={selectedRound}
-                    onChange={(e) => onRoundChange(Number(e.target.value))}
-                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                    {[4, 8, 16, 32, 64].map(size => (
-                        <option key={size} value={size}>{t('{count}강 (후보 {count}명 필요)', { count: size })}</option>
                     ))}
                 </select>
             </div>

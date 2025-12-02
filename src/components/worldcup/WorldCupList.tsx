@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase/client';
 import WorldCupCard from '@/components/worldcup/WorldCupCard';
 import { Database } from '@/lib/supabase/database.types';
 import Loading from '@/components/common/Loading';
-import { Edit, Trash2, Play, Share2 } from 'lucide-react';
+import { Edit, Trash2, Play, Share2, GitGraph, ChartBarIncreasing, ChartBar } from 'lucide-react';
 import CategoryChips from '@/components/home/CategoryChips';
 import Pagination from '@/components/common/Pagination';
 import EmptyState from '@/components/home/EmptyState';
@@ -179,20 +179,22 @@ export default function WorldCupList({ mode, userId, baseUrl, hideCategoryChips 
                                     totalPlays={wc.total_plays}
                                     candidateCount={wc.candidate_count || 0}
                                     isPublic={wc.is_public}
+                                    visibility={wc.visibility}
+                                    status={wc.status}
                                     author={wc.profiles?.nickname || t('알 수 없음')}
                                     actions={
                                         mode === 'my' ? (
                                             <div className="flex justify-between flex-wrap justify-end gap-y-2 gap-2">
-                                                {wc.is_public && (
-                                                    <Link
-                                                        href={`/play/${wc.id}/result`}
-                                                        onClick={(e) => e.stopPropagation()}
-                                                        className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-md border border-slate-700 bg-slate-800/50 px-3 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors whitespace-nowrap"
-                                                    >
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-                                                        {t('랭킹 보기')}
-                                                    </Link>
-                                                )}
+                                                <Link
+                                                    href={`/play/${wc.id}/result`}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                    }}
+                                                    className={`inline-flex flex-1 items-center justify-center gap-1.5 rounded-md border border-slate-700 bg-slate-800/50 px-3 py-2 text-sm font-medium text-slate-300 transition-colors whitespace-nowrap hover:bg-slate-800 hover:text-white`}
+                                                >
+                                                    <ChartBar className="w-4 h-4" />
+                                                    {t('랭킹 보기')}
+                                                </Link>
                                                 <div className='flex gap-2'>
                                                     <button
                                                         onClick={(e) => {
@@ -200,7 +202,7 @@ export default function WorldCupList({ mode, userId, baseUrl, hideCategoryChips 
                                                             e.stopPropagation();
                                                             handleShare(wc.id);
                                                         }}
-                                                        className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-slate-700 bg-slate-800/50 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white"
+                                                        className={`inline-flex h-9 w-9 items-center justify-center rounded-md border border-slate-700 bg-slate-800/50 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white`}
                                                         title="Share"
                                                     >
                                                         <Share2 className="h-4 w-4" />
@@ -244,7 +246,7 @@ export default function WorldCupList({ mode, userId, baseUrl, hideCategoryChips 
                                                     href={`/play/${wc.id}/result`}
                                                     className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-md border border-slate-700 bg-slate-800/50 px-3 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors whitespace-nowrap"
                                                 >
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                                                    <ChartBar className='w-4 h-4' />
                                                     {t('랭킹 보기')}
                                                 </Link>
                                                 <button
