@@ -60,8 +60,9 @@ export default function HeroSection({ worldcup }: HeroSectionProps) {
                             src={worldcup.thumbnail_url}
                             alt={worldcup.title}
                             fill
-                            className="object-cover transition-transform duration-700 group-hover:scale-105"
+                            className="object-contain transition-transform duration-700 group-hover:scale-105"
                             priority
+                            unoptimized
                         />
                     ) : (
                         <div className="flex h-full w-full items-center justify-center bg-slate-800">
